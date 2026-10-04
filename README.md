@@ -1,269 +1,213 @@
 # **Analysis of SIEM Priority Evasion Techniques and Development of Threat Hunting Scenarios for Low-Severity Threats**
 
-## **Week 1 \- Cyber Threat Intelligence Fundamentals**
+## **Week 4 - The Cyber Kill Chain and MITRE ATT&CK Analysis**
 
-### **1\. Introduction**
+### **1. Introduction**
 
-The project focuses on the analysis of SIEM priority evasion techniques and the development of threat hunting scenarios for low-severity threats.
+The project focuses on the analysis of SIEM priority evasion techniques and the development of threat hunting scenarios for low-severity threats. During Week 4, we analyze the **SolarWinds Compromise** and connect documented attacker activities with the **Cyber Kill Chain** and **MITRE ATT&CK** frameworks.
 
-In normal SOC operations, security analysts receive a large number of alerts from different security systems. These alerts can have different severity levels, and analysts usually pay more attention to alerts with higher severity.
+This attack is relevant to our project because some malicious activities can look similar to legitimate software updates, administrative actions, HTTP traffic, or DNS activity when viewed separately. Understanding how these activities fit into a larger attack can help analysts investigate events that initially appear to have low severity.
 
-Because of the large number of alerts, low-severity alerts may receive less attention or be reviewed later. However, a low-severity alert can still represent real suspicious or malicious activity. This means that some true positive alerts can remain unnoticed among lower-priority events.
+The main objectives of this week are to:
 
-The first week of the project focuses on Cyber Threat Intelligence (CTI) fundamentals. The main objectives are to understand important CTI terms, classify relevant threats, and identify sources of threat intelligence that can help with the investigation of low-severity SIEM alerts.
+- study the seven stages of the Cyber Kill Chain;
+- analyze the SolarWinds Compromise;
+- map documented attacker activities to relevant MITRE ATT&CK techniques;
+- explain how this analysis supports the investigation of low-severity SIEM alerts.
 
-### **2\. Cyber Threat Intelligence Glossary**
+### **2. Cyber Kill Chain**
 
-| Term | Definition |
-| ----- | ----- |
-| **Cyber Threat Intelligence (CTI)** | Information about cyber threats, attackers, and their activities that can help security analysts during investigation. |
-| **Threat Intelligence (TI)** | Collected and analyzed information about threats that can be used to understand suspicious activity. |
-| **IOC (Indicator of Compromise)** | A piece of information that may indicate malicious activity, such as an IP address, domain, or file hash. |
-| **Tactic** | The main goal or objective of an attacker during an attack. |
-| **Technique** | A method used by an attacker to achieve a specific objective. |
-| **Procedure** | A specific way in which an attacker implements a technique. |
-| **TTPs** | Tactics, Techniques, and Procedures used by attackers. |
-| **SIEM** | A system that collects and analyzes security events from different sources. |
-| **Security Event** | A recorded activity that can be relevant to security monitoring. |
-| **Alert** | A notification generated when a security system detects potentially suspicious activity. |
-| **Severity** | A value that represents the estimated importance or risk of a security alert. |
-| **True Positive (TP)** | An alert that correctly identifies real suspicious or malicious activity. |
-| **Low-Severity Alert** | An alert with a low severity level that may receive less attention during normal SOC operations. |
-| **Correlation** | The process of connecting multiple events to identify a meaningful pattern. |
-| **Detection Rule** | A rule or condition used to identify potentially suspicious activity. |
-| **Threat Source** | A source that provides information about cyber threats, indicators, or attacker activity. |
+The **Cyber Kill Chain** is a model developed by Lockheed Martin for describing the main stages of a cyber intrusion. It contains seven stages:
 
-### **3\. Classification of Relevant Threats**
+| Stage | Description |
+| --- | --- |
+| **Reconnaissance** | Collecting information that can help prepare an attack. |
+| **Weaponization** | Preparing malware or other capabilities for use in an intrusion. |
+| **Delivery** | Transmitting the malicious payload to the target. |
+| **Exploitation** | Triggering the payload or exploiting a weakness to gain execution. |
+| **Installation** | Installing malware or establishing a mechanism to maintain access. |
+| **Command and Control** | Establishing communication between the compromised system and attacker-controlled infrastructure. |
+| **Actions on Objectives** | Carrying out the attacker's goals, such as collecting or exfiltrating information. |
 
-For our project, we identified several types of activities that can appear as low-severity alerts in a SIEM.
+**The seven stages of the Cyber Kill Chain:**
 
-| Threat / Activity | Example | Possible Data Source |
-| ----- | ----- | ----- |
-| **Authentication Activity** | Multiple failed login attempts | Authentication logs |
-| **Account Discovery** | Searching for available user accounts | Windows/Linux logs |
-| **Process Discovery** | Listing running processes | Endpoint logs |
-| **Network Discovery** | Searching for hosts or network services | Network logs |
-| **Command Execution** | Suspicious command-line activity | Endpoint logs |
-| **PowerShell Activity** | Unusual PowerShell commands | Windows logs |
-| **Suspicious DNS Activity** | Requests to suspicious domains | DNS logs |
-| **Unusual Network Connections** | Connection to an unusual external IP | Firewall/network logs |
-| **Credential-related Activity** | Attempts to access credential information | Endpoint/security logs |
+![Figure 1 - The seven stages of the Cyber Kill Chain](images/week4-image1.png)
 
-These activities are not automatically malicious. Some of them can be part of normal work.
+The Cyber Kill Chain describes the sequence of an intrusion. MITRE ATT&CK provides more detailed information about specific adversary tactics and techniques. The two frameworks do not have a strict one-to-one mapping.
 
-For example, PowerShell can be used by a system administrator, and account or process discovery can also be performed during legitimate system administration.
+### **3. SolarWinds Compromise**
 
-The important part for our project is that some of these activities can receive a low severity level even though they may become important when additional related events are considered.
+The **SolarWinds Compromise** was a supply-chain cyber operation associated with **APT29**. Attackers compromised the SolarWinds Orion software build process and inserted malicious code into the software. The malicious code was then distributed to customers through a normal software update.
 
-### **4\. Threat Intelligence Sources**
+The campaign was discovered in **December 2020**. MITRE ATT&CK documents multiple techniques used during the campaign, including supply-chain compromise, PowerShell activity, valid accounts, remote services, command and control, data collection, and exfiltration.
 
-We identified several sources that can provide useful threat intelligence for our project.
+**MITRE ATT&CK SolarWinds Compromise campaign page:**
 
-#### **Open Sources**
+![Figure 2 - MITRE ATT&CK SolarWinds Compromise campaign page](images/week4-image2.png)
 
-**MITRE ATT\&CK**
+Source: [MITRE ATT&CK - SolarWinds Compromise (C0024)](https://attack.mitre.org/campaigns/C0024/).
 
-MITRE ATT\&CK provides information about attacker tactics and techniques. It can help us understand how specific activities can be used during attacks.
+### **4. Cyber Kill Chain Analysis**
 
-**VirusTotal**
+The following table connects documented SolarWinds activities with the seven Cyber Kill Chain stages and relevant ATT&CK techniques.
 
-VirusTotal can provide information about IP addresses, domains, file hashes, and other indicators. This information can be useful when investigating suspicious events.
+| Stage | SolarWinds Activity | Related MITRE ATT&CK Techniques |
+| --- | --- | --- |
+| **Reconnaissance** | Obtaining information and credentials that could help access victim environments. | **T1589.001** - Gather Victim Identity Information: Credentials |
+| **Weaponization** | Using custom malware, including SUNBURST, SUNSPOT, Raindrop, and TEARDROP. | **T1587.001** - Develop Capabilities: Malware |
+| **Delivery** | Distributing malicious code through a trojanized SolarWinds Orion software update. | **T1195.002** - Supply Chain Compromise: Compromise Software Supply Chain |
+| **Exploitation** | Using the compromised update to gain initial access to some victim environments. | **T1195.002** - Supply Chain Compromise: Compromise Software Supply Chain |
+| **Installation** | Using scheduled tasks and WMI event subscriptions to execute malware or maintain access. | **T1053.005** - Scheduled Task/Job: Scheduled Task; **T1546.003** - Event Triggered Execution: Windows Management Instrumentation Event Subscription |
+| **Command and Control** | Using HTTP and dynamic DNS resolution for communication with attacker-controlled infrastructure. | **T1071.001** - Application Layer Protocol: Web Protocols; **T1568** - Dynamic Resolution |
+| **Actions on Objectives** | Collecting internal information, emails, and files, followed by data exfiltration. | **T1213** - Data from Information Repositories; **T1114.002** - Remote Email Collection; **T1005** - Data from Local System; **T1048.002** - Exfiltration Over Asymmetric Encrypted Non-C2 Protocol |
 
-**Shodan**
+**Mapping note:** This table is our analytical mapping of documented SolarWinds activities to the Cyber Kill Chain. It is not an official MITRE mapping of the campaign to the seven Kill Chain stages. One ATT&CK technique can be relevant to more than one stage. In particular, T1195.002 describes the supply-chain initial-access mechanism; its inclusion under Exploitation does not establish a separate software vulnerability exploit.
 
-Shodan provides information about Internet-connected devices and services. It can be useful for understanding exposed infrastructure and investigating suspicious network activity.
+### **5. Reconnaissance**
 
-**Public Threat Reports**
+During reconnaissance, an attacker collects information that can help with later stages of an operation. For the SolarWinds Compromise, MITRE documents credential-related information gathering under **T1589.001 - Gather Victim Identity Information: Credentials**.
 
-Security companies and research organizations publish reports about real-world attacks, malware, attacker techniques, and indicators.
+For our project, this highlights the importance of examining account and credential-related activity in context. Some activity may resemble legitimate work, while its connection to other suspicious events can make it relevant to an investigation.
 
-#### **Internal Sources**
+**MITRE ATT&CK technique T1589.001:**
 
-A SOC can also use its own security data, including:
+![Figure 3 - Gather Victim Identity Information: Credentials](images/week4-image3.png)
 
-* SIEM logs  
-* Authentication logs  
-* DNS logs  
-* Firewall logs  
-* Endpoint logs
+Source: [MITRE ATT&CK - T1589.001](https://attack.mitre.org/techniques/T1589/001/).
 
-These sources provide information about what is happening inside the monitored environment.
+### **6. Weaponization**
 
-### **5\. Importance of Threat Intelligence for Our Project**
+MITRE maps malware development activity associated with SolarWinds to **T1587.001 - Develop Capabilities: Malware**. The campaign used malware including **SUNBURST**, **SUNSPOT**, **Raindrop**, and **TEARDROP**.
 
-Threat Intelligence is important for our project because it provides additional information that can help analysts investigate low-severity alerts.
+This stage helps explain how the attackers prepared capabilities used throughout the operation. These capabilities supported the compromised software build process and subsequent activity in victim environments.
 
-A low-severity alert by itself may not provide enough information to determine whether the activity is suspicious. For example, a single PowerShell event can be normal administrative activity. However, additional information about the user, destination, IP address, domain, or other related events can make the activity more interesting for investigation.
+**MITRE ATT&CK technique T1587.001:**
 
-This is especially important because SOC analysts work with a large number of alerts and normally prioritize alerts according to their severity. As a result, lower-severity alerts may receive less attention.
+![Figure 4 - Develop Capabilities: Malware](images/week4-image4.png)
 
-Our project focuses on the possibility that a low-severity alert can still be a true positive. Threat Intelligence can provide additional context that helps analysts decide whether such an alert should be investigated further.
+Source: [MITRE ATT&CK - T1587.001](https://attack.mitre.org/techniques/T1587/001/).
 
-The information collected during Week 1 will be used in the next stages of the project. In Week 2, we will collect relevant information from OSINT sources. In Week 3, we will process and analyze the collected data.
+### **7. Delivery**
 
-### **6\. Week 1 Results**
+The main delivery mechanism was a **supply-chain compromise**. MITRE documents that APT29 gained initial network access to some victims through a trojanized update of SolarWinds Orion software. The relevant technique is **T1195.002 - Supply Chain Compromise: Compromise Software Supply Chain**.
 
-During Week 1, we:
+A software update can appear to be a normal operational event. This makes the SolarWinds case relevant to our project: the apparent legitimacy of an individual event is not enough to determine whether related activity is safe.
 
-* studied the basic concepts of Cyber Threat Intelligence;  
-* created a glossary of important CTI and SIEM-related terms;  
-* identified activities that can appear as low-severity alerts;  
-* classified relevant threats and activities;  
-* identified open and internal sources of threat intelligence;  
-* studied the importance of True Positive alerts for our project;  
-* connected CTI concepts with the problem of investigating low-severity SIEM alerts.
+**MITRE ATT&CK Supply Chain Compromise technique page:**
 
-The next step of the project is to collect relevant threat intelligence and OSINT data that can be used for further analysis.
+![Figure 5 - Supply Chain Compromise](images/week4-image5.png)
 
-**Week 2 \- Data Collection Process**
+Source: [MITRE ATT&CK - T1195.002](https://attack.mitre.org/techniques/T1195/002/).
 
-## **VirusTotal**
+### **8. Exploitation**
 
-VirusTotal was used to examine information about IP addresses, domains, and other indicators.
+The trojanized Orion update provided a way for the attackers to gain initial network access. **T1195.002** is therefore relevant to this part of our analytical Kill Chain mapping as well as to Delivery.
 
-During the analysis, we looked at information such as:
+This overlap illustrates why Kill Chain stages and ATT&CK techniques should not be treated as identical categories. The mapping describes the role of the compromised update in the intrusion without claiming that this initial-access path required a separate vulnerability exploit.
 
-* detection results;  
-* IP addresses;  
-* domain information;  
-* file hashes;  
-* security vendors' results.
+### **9. Installation**
 
-This information can be useful for checking whether an indicator has already been associated with suspicious or malicious activity.
+MITRE documents **T1053.005 - Scheduled Task/Job: Scheduled Task** and **T1546.003 - Event Triggered Execution: Windows Management Instrumentation Event Subscription** in the SolarWinds campaign.
 
-We analyzed several IP addresses in different OSINT sources
+For T1546.003, MITRE states that APT29 used a WMI event filter to invoke a command-line event consumer at system boot and launch a backdoor with `rundll32.exe`. These mechanisms are relevant to execution and maintaining access.
 
-1. `45.76.155.202` — C2 IP from company Notepad++ 
+Scheduled tasks and WMI also have legitimate administrative uses. Investigating them requires context about what was created or changed, which account performed the action, and what program was executed.
 
-**VirusTotal analysis**   
-![Image 1](images/image1.png)
+**MITRE ATT&CK Event Triggered Execution technique page:**
 
-As we can see there are 15 malicious detections
+![Figure 6 - Event Triggered Execution and WMI event subscriptions](images/week4-image6.png)
 
-![Image 2](images/image2.png)
+Sources: [MITRE ATT&CK - T1053.005](https://attack.mitre.org/techniques/T1053/005/) and [MITRE ATT&CK - T1546.003](https://attack.mitre.org/techniques/T1546/003/).
 
-![Image 3](images/image3.png)
+### **10. Command and Control**
 
-![Image 4](images/image4.png)
+MITRE documents the use of HTTP for command and control and data exfiltration during the campaign. The attackers also used dynamic DNS resolution for C2. Relevant techniques are **T1071.001 - Application Layer Protocol: Web Protocols** and **T1568 - Dynamic Resolution**.
 
-## **Maltego**
+HTTP and DNS traffic are common in normal network operations. For threat hunting, these events become more useful when analysts consider their destinations, the processes generating the traffic, and other related activity.
 
-Maltego was studied as a tool for investigating relationships between different entities.
+**MITRE ATT&CK technique T1568:**
 
-It can be used to work with information such as DNS information and other related entities.
+![Figure 7 - Dynamic Resolution](images/week4-image7.png)
 
-Maltego is useful when we need to look at several pieces of information together instead of checking each indicator separately.
+Sources: [MITRE ATT&CK - T1071.001](https://attack.mitre.org/techniques/T1071/001/) and [MITRE ATT&CK - T1568](https://attack.mitre.org/techniques/T1568/).
 
-**Maltego investigation**
+### **11. Actions on Objectives**
 
-*![Image 5](images/image5.png)*
+MITRE documents access to internal knowledge repositories, email collection, file extraction, data staging, and exfiltration. Examples include:
 
-The collected relationships can help us understand whether different indicators may be connected.
+| Technique | Activity |
+| --- | --- |
+| **T1213 - Data from Information Repositories** | Accessing internal repositories containing organizational information. |
+| **T1114.002 - Remote Email Collection** | Collecting emails from targeted accounts. |
+| **T1005 - Data from Local System** | Extracting files from compromised systems. |
+| **T1048.002 - Exfiltration Over Asymmetric Encrypted Non-C2 Protocol** | Exfiltrating collected data using an encrypted protocol outside the existing C2 channel. |
 
-## **Shodan**
+These activities show how earlier stages of the intrusion supported the attackers' information collection objectives.
 
-Shodan was used to examine information about Internet-connected systems and services.
+**MITRE ATT&CK technique T1005:**
 
-The information available through Shodan can include:
+![Figure 8 - Data from Local System](images/week4-image8.png)
 
-* Open ports;  
-* Running services;  
-* OpenSSH  
-* Domains  
-* Countries/Cities
+Source: [MITRE ATT&CK - T1005](https://attack.mitre.org/techniques/T1005/).
 
-This type of information can help us understand the infrastructure related to an IP address.
+### **12. Connection to Our SIEM Project**
 
-**Shodan search results:**
+The SolarWinds attack is relevant to our project because some malicious activities can look normal when viewed separately. Examples include:
 
-![Image 6](images/image6.png)
+- software updates;
+- HTTP traffic;
+- DNS traffic;
+- PowerShell activity;
+- legitimate or compromised accounts;
+- scheduled tasks.
 
-![Image 7](images/image7.png)
+A SIEM can record these activities as security events, but additional context may be needed to determine whether they are suspicious. The investigation workflow used in our project is:
 
-The information collected from Shodan can later be compared with other threat intelligence data during further analysis.
+**SIEM event → IOC → OSINT → data processing → threat analysis**
 
-**Week 2 Results**
+| Project Stage | Tools or Frameworks | Contribution to the Investigation |
+| --- | --- | --- |
+| **Week 2 - Data Collection** | VirusTotal, Shodan, and Maltego | Collecting additional information about suspicious indicators and their relationships. |
+| **Week 3 - Data Processing** | MISP | Organizing, filtering, and normalizing collected IOCs. |
+| **Week 4 - Threat Analysis** | Cyber Kill Chain and MITRE ATT&CK | Understanding how individual activities can fit into a larger attack. |
 
-| Source | What we collect | How it can help |
-| :---: | ----- | ----- |
-|  VirusTotal | `IP: 45.76.155.202Domain: v333.funHash: 3efeb74673044e7da79ca37d6e2935fc9b89a55dDetections: alphaMointain.ai, ESET, Dr.Web and etc.Community Score: -1` | Additional context for suspicious indicators |
-| Shodan | `Open ports: 22, 80 Domain: vultrusercontent.com ASN: AS20473 Services on port 22: SSH SSH Software: OpenSSH8.9p1 Service on port 80: HTTP Web Service: nginx 1.31.3 HTTP Responce: 403 Forbidden` | Information about exposed services |
-| Maltego | Relationships between entities | Finding connections between indicators |
+An event that appears low-severity by itself may become more important when combined with related events and threat intelligence. This analysis supports that reasoning; it does not measure SIEM detection performance or demonstrate tested detection rules.
 
-## **Week 3 \- Data processing and exploitation**
+### **13. Week 4 Results and Conclusion**
 
-**MISP** 
+During Week 4, we:
 
-Open source platform—originally known as the Malware Information Sharing Platform—used to collect, store, correlate, and share cyber security indicators, threats, and vulnerabilities among organizations.
+- studied the seven stages of the Cyber Kill Chain;
+- analyzed the SolarWinds Compromise using publicly documented campaign information;
+- connected attacker activities with relevant MITRE ATT&CK techniques;
+- created an analytical mapping between the campaign and Kill Chain stages;
+- explained the limitations of mapping two different frameworks;
+- connected the analysis with our investigation of low-severity SIEM events.
 
-**![Image 8](images/image8.png)**  
-**![Image 9](images/image9.png)**  
-Installing MISP on our computer inside Docker Compose to eliminate dependency hell.
+The SolarWinds Compromise demonstrates how an attack can involve multiple stages and different attacker techniques. The Cyber Kill Chain helps describe the sequence of an intrusion, while MITRE ATT&CK provides detailed information about adversary behavior.
 
-![Image 10](images/image10.png)  
-After our installation is successful, we need to go to the [http://localhost/](http://localhost/) on our web browser and we will be greeted by MISP.
+For our SIEM project, the main finding is the importance of combining individual events with context and threat intelligence. Examining related activity together can help analysts recognize suspicious patterns that may be missed when each event is reviewed separately.
 
-![Image 11](images/image11.png)
+---
 
-#### **Step 2 — Creating an Event**
+## **References**
 
-We created a new MISP event called **“Low-Severity Threat IOC Analysis”**.
-
-The event was configured with the following parameters:
-
-* Threat Level: Medium  
-* Analysis: Initial  
-* Distribution: Your organisation only
-
-This event was used to store the indicators collected during our analysis.
-
-![Image 12](images/image12.png)
-
-![Image 13](images/image13.png)
-
-### **Step 3 — Adding and Organizing IOCs**
-
-The collected IOCs were added to the MISP event as attributes. We used several types of indicators:
-
-* IP address (`ip-dst`)  
-* Domain (`domain`)  
-* File hash (`sha256`)
-
-For example, the IP address `87.106.48.217`, which was investigated during OSINT analysis, was added as a Network Activity attribute.
-
-Each IOC was stored according to its type and category. This helped us organize the collected data in a structured format and prepare it for further filtering and normalization.
-
-![Image 14](images/image14.png)
-
-#### **Result**
-
-As a result, we successfully deployed MISP, created an event, and imported the collected IOCs. The indicators were organized by their type and category and prepared for further filtering and normalization.
-
-**Filtering and Normalization** 
-
-The data was converted into .csv file for further actions.
-
-### **Filtering and Normalization**
-
-Filtering and normalization were applied to improve the quality and consistency of the collected IOC data.
-
-| Technique | Raw Data Example | Process | Result |
-| ----- | ----- | ----- | ----- |
-| Duplicate Filtering | `87.106.48.217` appears twice | Remove duplicate values | `87.106.48.217` appears once |
-| Invalid IP Filtering | `999.999.999.999` | Check if the IP address is valid | Invalid IP is removed |
-| Empty Value Filtering | Empty domain value | Check for missing values | Empty row is removed |
-| Domain Normalization | `Example-Domain.COM` | Convert domain to lowercase | `example-domain.com` |
-| Hash Normalization | `ABCDEF123...` | Convert SHA-256 hash to lowercase | `abcdef123...` |
-| Whitespace Normalization | `87.106.48.217` | Remove extra spaces | `87.106.48.217` |
-
-After filtering and normalization, the dataset contains only valid and unique IOCs in a consistent format. The processed data can then be used for further threat intelligence analysis.
+1. [Lockheed Martin - Gaining the Advantage: Applying Cyber Kill Chain Methodology](https://www.lockheedmartin.com/content/dam/lockheed-martin/rms/documents/cyber/Gaining_the_Advantage_Cyber_Kill_Chain.pdf)
+2. [MITRE ATT&CK - SolarWinds Compromise (C0024)](https://attack.mitre.org/campaigns/C0024/)
+3. [MITRE ATT&CK - T1589.001: Gather Victim Identity Information: Credentials](https://attack.mitre.org/techniques/T1589/001/)
+4. [MITRE ATT&CK - T1587.001: Develop Capabilities: Malware](https://attack.mitre.org/techniques/T1587/001/)
+5. [MITRE ATT&CK - T1195.002: Compromise Software Supply Chain](https://attack.mitre.org/techniques/T1195/002/)
+6. [MITRE ATT&CK - T1053.005: Scheduled Task](https://attack.mitre.org/techniques/T1053/005/)
+7. [MITRE ATT&CK - T1546.003: Windows Management Instrumentation Event Subscription](https://attack.mitre.org/techniques/T1546/003/)
+8. [MITRE ATT&CK - T1071.001: Web Protocols](https://attack.mitre.org/techniques/T1071/001/)
+9. [MITRE ATT&CK - T1568: Dynamic Resolution](https://attack.mitre.org/techniques/T1568/)
+10. [MITRE ATT&CK - T1213: Data from Information Repositories](https://attack.mitre.org/techniques/T1213/)
+11. [MITRE ATT&CK - T1114.002: Remote Email Collection](https://attack.mitre.org/techniques/T1114/002/)
+12. [MITRE ATT&CK - T1005: Data from Local System](https://attack.mitre.org/techniques/T1005/)
+13. [MITRE ATT&CK - T1048.002: Exfiltration Over Asymmetric Encrypted Non-C2 Protocol](https://attack.mitre.org/techniques/T1048/002/)
 
 ---
 
 ## **Use of AI Tools**
 
-ChatGPT was used during the preparation of this project for:
-- Finding publicly available IP address information for OSINT analysis.
-- Polishing and improving the wording and readability of the report text.
-
-The analysis, investigation steps, and project results were reviewed and performed by the project team.
+ChatGPT was used to convert the supplied project report into GitHub Markdown and organize its headings, tables, captions, and links. The campaign analysis and screenshots were taken from the supplied report.
