@@ -31,7 +31,7 @@ The **Cyber Kill Chain** is a model developed by Lockheed Martin for describing 
 
 **The seven stages of the Cyber Kill Chain:**
 
-![Figure 1 - The seven stages of the Cyber Kill Chain](images/week4-image1.png)
+![Figure 1 - The seven stages of the Cyber Kill Chain](images/image1.png)
 
 The Cyber Kill Chain describes the sequence of an intrusion. MITRE ATT&CK provides more detailed information about specific adversary tactics and techniques. The two frameworks do not have a strict one-to-one mapping.
 
@@ -43,7 +43,7 @@ The campaign was discovered in **December 2020**. MITRE ATT&CK documents multipl
 
 **MITRE ATT&CK SolarWinds Compromise campaign page:**
 
-![Figure 2 - MITRE ATT&CK SolarWinds Compromise campaign page](images/week4-image2.png)
+![Figure 2 - MITRE ATT&CK SolarWinds Compromise campaign page](images/image2.png)
 
 Source: [MITRE ATT&CK - SolarWinds Compromise (C0024)](https://attack.mitre.org/campaigns/C0024/).
 
@@ -71,7 +71,7 @@ For our project, this highlights the importance of examining account and credent
 
 **MITRE ATT&CK technique T1589.001:**
 
-![Figure 3 - Gather Victim Identity Information: Credentials](images/week4-image3.png)
+![Figure 3 - Gather Victim Identity Information: Credentials](images/image3.png)
 
 Source: [MITRE ATT&CK - T1589.001](https://attack.mitre.org/techniques/T1589/001/).
 
@@ -83,7 +83,7 @@ This stage helps explain how the attackers prepared capabilities used throughout
 
 **MITRE ATT&CK technique T1587.001:**
 
-![Figure 4 - Develop Capabilities: Malware](images/week4-image4.png)
+![Figure 4 - Develop Capabilities: Malware](images/image4.png)
 
 Source: [MITRE ATT&CK - T1587.001](https://attack.mitre.org/techniques/T1587/001/).
 
@@ -95,7 +95,7 @@ A software update can appear to be a normal operational event. This makes the So
 
 **MITRE ATT&CK Supply Chain Compromise technique page:**
 
-![Figure 5 - Supply Chain Compromise](images/week4-image5.png)
+![Figure 5 - Supply Chain Compromise](images/image5.png)
 
 Source: [MITRE ATT&CK - T1195.002](https://attack.mitre.org/techniques/T1195/002/).
 
@@ -115,7 +115,7 @@ Scheduled tasks and WMI also have legitimate administrative uses. Investigating 
 
 **MITRE ATT&CK Event Triggered Execution technique page:**
 
-![Figure 6 - Event Triggered Execution and WMI event subscriptions](images/week4-image6.png)
+![Figure 6 - Event Triggered Execution and WMI event subscriptions](images/image6.png)
 
 Sources: [MITRE ATT&CK - T1053.005](https://attack.mitre.org/techniques/T1053/005/) and [MITRE ATT&CK - T1546.003](https://attack.mitre.org/techniques/T1546/003/).
 
@@ -127,7 +127,7 @@ HTTP and DNS traffic are common in normal network operations. For threat hunting
 
 **MITRE ATT&CK technique T1568:**
 
-![Figure 7 - Dynamic Resolution](images/week4-image7.png)
+![Figure 7 - Dynamic Resolution](images/image7.png)
 
 Sources: [MITRE ATT&CK - T1071.001](https://attack.mitre.org/techniques/T1071/001/) and [MITRE ATT&CK - T1568](https://attack.mitre.org/techniques/T1568/).
 
@@ -146,7 +146,7 @@ These activities show how earlier stages of the intrusion supported the attacker
 
 **MITRE ATT&CK technique T1005:**
 
-![Figure 8 - Data from Local System](images/week4-image8.png)
+![Figure 8 - Data from Local System](images/image8.png)
 
 Source: [MITRE ATT&CK - T1005](https://attack.mitre.org/techniques/T1005/).
 
