@@ -95,7 +95,7 @@ A software update can appear to be a normal operational event. This makes the So
 
 **MITRE ATT&CK Supply Chain Compromise technique page:**
 
-![Figure 5 - Supply Chain Compromise](images/image4.png)
+![Figure 5 - Supply Chain Compromise](images/image8.png)
 
 Source: [MITRE ATT&CK - T1195.002](https://attack.mitre.org/techniques/T1195/002/).
 
@@ -146,7 +146,7 @@ These activities show how earlier stages of the intrusion supported the attacker
 
 **MITRE ATT&CK technique T1005:**
 
-![Figure 8 - Data from Local System](images/image8.png)
+![Figure 8 - Data from Local System](images/image4.png)
 
 Source: [MITRE ATT&CK - T1005](https://attack.mitre.org/techniques/T1005/).
 
