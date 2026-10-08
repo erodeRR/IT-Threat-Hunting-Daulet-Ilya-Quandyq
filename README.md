@@ -31,7 +31,7 @@ The **Cyber Kill Chain** is a model developed by Lockheed Martin for describing 
 
 **The seven stages of the Cyber Kill Chain:**
 
-![Figure 1 - The seven stages of the Cyber Kill Chain](images/image1.png)
+![Figure 1 - The seven stages of the Cyber Kill Chain](images/image3.png)
 
 The Cyber Kill Chain describes the sequence of an intrusion. MITRE ATT&CK provides more detailed information about specific adversary tactics and techniques. The two frameworks do not have a strict one-to-one mapping.
 
@@ -71,7 +71,7 @@ For our project, this highlights the importance of examining account and credent
 
 **MITRE ATT&CK technique T1589.001:**
 
-![Figure 3 - Gather Victim Identity Information: Credentials](images/image3.png)
+![Figure 3 - Gather Victim Identity Information: Credentials](images/image1.png)
 
 Source: [MITRE ATT&CK - T1589.001](https://attack.mitre.org/techniques/T1589/001/).
 
