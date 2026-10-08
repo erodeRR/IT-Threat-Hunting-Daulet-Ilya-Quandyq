@@ -83,7 +83,7 @@ This stage helps explain how the attackers prepared capabilities used throughout
 
 **MITRE ATT&CK technique T1587.001:**
 
-![Figure 4 - Develop Capabilities: Malware](images/image4.png)
+![Figure 4 - Develop Capabilities: Malware](images/image5.png)
 
 Source: [MITRE ATT&CK - T1587.001](https://attack.mitre.org/techniques/T1587/001/).
 
@@ -95,7 +95,7 @@ A software update can appear to be a normal operational event. This makes the So
 
 **MITRE ATT&CK Supply Chain Compromise technique page:**
 
-![Figure 5 - Supply Chain Compromise](images/image5.png)
+![Figure 5 - Supply Chain Compromise](images/image4.png)
 
 Source: [MITRE ATT&CK - T1195.002](https://attack.mitre.org/techniques/T1195/002/).
 
