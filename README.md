@@ -71,7 +71,7 @@ For our project, this highlights the importance of examining account and credent
 
 **MITRE ATT&CK technique T1589.001:**
 
-![Figure 3 - Gather Victim Identity Information: Credentials](images/image1.png)
+![Figure 3 - Gather Victim Identity Information: Credentials](images/image6.png)
 
 Source: [MITRE ATT&CK - T1589.001](https://attack.mitre.org/techniques/T1589/001/).
 
@@ -115,7 +115,7 @@ Scheduled tasks and WMI also have legitimate administrative uses. Investigating 
 
 **MITRE ATT&CK Event Triggered Execution technique page:**
 
-![Figure 6 - Event Triggered Execution and WMI event subscriptions](images/image6.png)
+![Figure 6 - Event Triggered Execution and WMI event subscriptions](images/image1.png)
 
 Sources: [MITRE ATT&CK - T1053.005](https://attack.mitre.org/techniques/T1053/005/) and [MITRE ATT&CK - T1546.003](https://attack.mitre.org/techniques/T1546/003/).
 
