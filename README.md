@@ -1,269 +1,251 @@
-# **Analysis of SIEM Priority Evasion Techniques and Development of Threat Hunting Scenarios for Low-Severity Threats**
+# Threat Hunting Concept and Scenario Analysis
 
-## **Week 1 \- Cyber Threat Intelligence Fundamentals**
+**Project:** Analysis of SIEM Priority Evasion Techniques and Development of Threat Hunting Scenarios for Low-Severity Threats
 
-### **1\. Introduction**
+## 1. Introduction
 
-The project focuses on the analysis of SIEM priority evasion techniques and the development of threat hunting scenarios for low-severity threats.
+Threat Hunting Concept and Scenario Analysis
 
-In normal SOC operations, security analysts receive a large number of alerts from different security systems. These alerts can have different severity levels, and analysts usually pay more attention to alerts with higher severity.
+Project: Analysis of SIEM Priority Evasion Techniques and Development of Threat Hunting Scenarios for Low-Severity Threats
 
-Because of the large number of alerts, low-severity alerts may receive less attention or be reviewed later. However, a low-severity alert can still represent real suspicious or malicious activity. This means that some true positive alerts can remain unnoticed among lower-priority events.
 
-The first week of the project focuses on Cyber Threat Intelligence (CTI) fundamentals. The main objectives are to understand important CTI terms, classify relevant threats, and identify sources of threat intelligence that can help with the investigation of low-severity SIEM alerts.
+## 1. Introduction
 
-### **2\. Cyber Threat Intelligence Glossary**
+Threat hunting is a proactive investigation that searches for malicious activity that existing security controls may have missed. A hunt begins with a question, examines relevant evidence, and produces findings or improvements to detection coverage. SANS emphasizes testable hypotheses, suitable telemetry, and a repeatable investigation process
 
-| Term | Definition |
-| ----- | ----- |
-| **Cyber Threat Intelligence (CTI)** | Information about cyber threats, attackers, and their activities that can help security analysts during investigation. |
-| **Threat Intelligence (TI)** | Collected and analyzed information about threats that can be used to understand suspicious activity. |
-| **IOC (Indicator of Compromise)** | A piece of information that may indicate malicious activity, such as an IP address, domain, or file hash. |
-| **Tactic** | The main goal or objective of an attacker during an attack. |
-| **Technique** | A method used by an attacker to achieve a specific objective. |
-| **Procedure** | A specific way in which an attacker implements a technique. |
-| **TTPs** | Tactics, Techniques, and Procedures used by attackers. |
-| **SIEM** | A system that collects and analyzes security events from different sources. |
-| **Security Event** | A recorded activity that can be relevant to security monitoring. |
-| **Alert** | A notification generated when a security system detects potentially suspicious activity. |
-| **Severity** | A value that represents the estimated importance or risk of a security alert. |
-| **True Positive (TP)** | An alert that correctly identifies real suspicious or malicious activity. |
-| **Low-Severity Alert** | An alert with a low severity level that may receive less attention during normal SOC operations. |
-| **Correlation** | The process of connecting multiple events to identify a meaningful pattern. |
-| **Detection Rule** | A rule or condition used to identify potentially suspicious activity. |
-| **Threat Source** | A source that provides information about cyber threats, indicators, or attacker activity. |
+For this assignment, we create a hypothesis-driven hunting scenario and analyse it, along with executing hunt queries in Splunk or ELK.
 
-### **3\. Classification of Relevant Threats**
+This hypothesis-driven PowerShell hunting scenario supports the project by correlating seemingly low-severity events to uncover malicious activity that SIEM prioritization may overlook, helping evaluate priority evasion techniques and develop effective threat hunting scenarios.
 
-For our project, we identified several types of activities that can appear as low-severity alerts in a SIEM.
 
-| Threat / Activity | Example | Possible Data Source |
-| ----- | ----- | ----- |
-| **Authentication Activity** | Multiple failed login attempts | Authentication logs |
-| **Account Discovery** | Searching for available user accounts | Windows/Linux logs |
-| **Process Discovery** | Listing running processes | Endpoint logs |
-| **Network Discovery** | Searching for hosts or network services | Network logs |
-| **Command Execution** | Suspicious command-line activity | Endpoint logs |
-| **PowerShell Activity** | Unusual PowerShell commands | Windows logs |
-| **Suspicious DNS Activity** | Requests to suspicious domains | DNS logs |
-| **Unusual Network Connections** | Connection to an unusual external IP | Firewall/network logs |
-| **Credential-related Activity** | Attempts to access credential information | Endpoint/security logs |
+#### 2. Hunting models
 
-These activities are not automatically malicious. Some of them can be part of normal work.
+| Model | Starting point | Example |
+| --- | --- | --- |
+| Intel-driven | Threat intelligence about attackers, indicators of compromise (IOCs), or tactics, techniques, and procedures (TTPs). | A report describes a campaign using PowerShell to download payloads. Hunters search for its indicators and behavior. |
+| Hypothesis-driven | A testable assumption about attacker behavior in the organization’s environment. | “Attackers may be using Office documents to launch PowerShell and retrieve malicious code.” Hunters investigate whether this behavior occurred. |
 
-For example, PowerShell can be used by a system administrator, and account or process discovery can also be performed during legitimate system administration.
+These approaches can overlap: threat intelligence can inform a hypothesis. SANS summit material describes structured hunts that begin with hypotheses and may be triggered by intelligence reports or attacker activity.
 
-The important part for our project is that some of these activities can receive a low severity level even though they may become important when additional related events are considered.
 
-### **4\. Threat Intelligence Sources**
+#### 3. Hypothesis-driven scenario: suspicious PowerShell activity
 
-We identified several sources that can provide useful threat intelligence for our project.
+Scenario: A fictional organization uses Windows workstations and Microsoft Office. PowerShell is permitted for administration, but ordinary employees rarely use it. The security team wants to investigate possible malicious script execution without waiting for an alert.
 
-#### **Open Sources**
+Hypothesis:
+“During the last seven days, at least one employee workstation executed unauthorized PowerShell launched by an Office application, which then retrieved and executed code from an external location.”
 
-**MITRE ATT\&CK**
+Scope: Employee Windows workstations, the last seven days, and available historical data for comparison.
 
-MITRE ATT\&CK provides information about attacker tactics and techniques. It can help us understand how specific activities can be used during attacks.
+Objective: Identify the execution chain, establish whether it was authorized, and determine which devices and accounts were affected.
 
-**VirusTotal**
+ATT&CK mapping: PowerShell execution maps to T1059.001 — Command and Scripting Interpreter: PowerShell. Other techniques should be assigned only when supporting evidence is found.
 
-VirusTotal can provide information about IP addresses, domains, file hashes, and other indicators. This information can be useful when investigating suspicious events.
 
-**Shodan**
+#### 4. Required evidence
 
-Shodan provides information about Internet-connected devices and services. It can be useful for understanding exposed infrastructure and investigating suspicious network activity.
+| Data source | Evidence to examine |
+| --- | --- |
+| EDR process telemetry or Sysmon Event ID 1 | PowerShell command line, parent process, account, process identifiers, and execution time. |
+| Windows PowerShell Event ID 4104 | Script-block content, where Script Block Logging was enabled. |
+| EDR network telemetry or Sysmon Event ID 3 | Connections attributable to the suspicious process; Sysmon network logging must be enabled. |
+| DNS, proxy, and firewall logs | Contacted domains, destinations, and connection times. |
+| Email and endpoint file records | Possible delivery document, downloaded files, and subsequent execution. |
 
-**Public Threat Reports**
+Microsoft documents Sysmon’s process and network telemetry and Windows PowerShell’s Event ID 4104 logging. Logging coverage must be checked before interpreting missing events.
 
-Security companies and research organizations publish reports about real-world attacks, malware, attacker techniques, and indicators.
 
-#### **Internal Sources**
+#### 5. Investigation procedure
 
-A SOC can also use its own security data, including:
+Check visibility and establish a baseline. Confirm that relevant devices reported logs throughout the hunt period. Identify approved scripts, administrative accounts, and normal PowerShell usage.
 
-* SIEM logs  
-* Authentication logs  
-* DNS logs  
-* Firewall logs  
-* Endpoint logs
+Find candidate executions. Search for powershell.exe and pwsh.exe launched by Word, Excel, or PowerPoint. Also examine intermediary processes, such as Office launching cmd.exe, which then launches PowerShell.
 
-These sources provide information about what is happening inside the monitored environment.
+Inspect commands and scripts. Look for encoded commands, hidden execution, obfuscation, remote downloads, and downloaded-code execution. Decode captured content for inspection without executing it. These features are investigation leads; individual flags do not prove malicious activity.
 
-### **5\. Importance of Threat Intelligence for Our Project**
+Correlate the evidence. Connect process execution, script content, network connections, and file activity into a timeline. Use process identifiers that distinguish separate executions, rather than relying on timestamps alone.
 
-Threat Intelligence is important for our project because it provides additional information that can help analysts investigate low-severity alerts.
+Check legitimate explanations. Verify whether the activity belongs to an approved macro, business workflow, deployment tool, or administrator. Compare the script, destination, account, and timing with the approved activity.
 
-A low-severity alert by itself may not provide enough information to determine whether the activity is suspicious. For example, a single PowerShell event can be normal administrative activity. However, additional information about the user, destination, IP address, domain, or other related events can make the activity more interesting for investigation.
+Expand and document the hunt. Search other devices for the same script content, execution pattern, destination, or file hash. Record findings, evidence, affected assets, and visibility gaps.
 
-This is especially important because SOC analysts work with a large number of alerts and normally prioritize alerts according to their severity. As a result, lower-severity alerts may receive less attention.
 
-Our project focuses on the possibility that a low-severity alert can still be a true positive. Threat Intelligence can provide additional context that helps analysts decide whether such an alert should be investigated further.
+## 6. Practical SIEM Hunting in Splunk
 
-The information collected during Week 1 will be used in the next stages of the project. In Week 2, we will collect relevant information from OSINT sources. In Week 3, we will process and analyze the collected data.
+The practical part uses the Windows Security events available in the local Splunk instance. The original queries assumed Sysmon process and network fields, but those events were not yet available in the searched Splunk index. Therefore, the queries below were adapted to the data that could actually be searched. The results show process activity; they do not by themselves prove malicious activity.
 
-### **6\. Week 1 Results**
 
-During Week 1, we:
+### 6.1. Search for process creation events
 
-* studied the basic concepts of Cyber Threat Intelligence;  
-* created a glossary of important CTI and SIEM-related terms;  
-* identified activities that can appear as low-severity alerts;  
-* classified relevant threats and activities;  
-* identified open and internal sources of threat intelligence;  
-* studied the importance of True Positive alerts for our project;  
-* connected CTI concepts with the problem of investigating low-severity SIEM alerts.
+Windows Security Event ID 4688 records process creation. The following query searches the main index for these events and displays the time, host, event code, and message.
 
-The next step of the project is to collect relevant threat intelligence and OSINT data that can be used for further analysis.
+```spl
+index=main sourcetype="WinEventLog:Security" EventCode=4688
+ | table _time host EventCode Message
+ | sort -_time
+```
 
-**Week 2 \- Data Collection Process**
+The search returned process-creation events. One visible event showed the process C:\Program Files\Splunk\bin\splunk-powershell.exe, launched by splunkd.exe. This is consistent with Splunk's own operation and must not be reported as an attack.
 
-## **VirusTotal**
+![Figure 1. Windows Security Event ID 4688 results containing a Splunk PowerShell process.](images/figure_01.png)
 
-VirusTotal was used to examine information about IP addresses, domains, and other indicators.
+*Figure 1. Windows Security Event ID 4688 results containing a Splunk PowerShell process.*
 
-During the analysis, we looked at information such as:
 
-* detection results;  
-* IP addresses;  
-* domain information;  
-* file hashes;  
-* security vendors' results.
+### 6.2. Search for PowerShell-related process events
 
-This information can be useful for checking whether an indicator has already been associated with suspicious or malicious activity.
+The next query narrows the Event ID 4688 results to messages containing PowerShell. This is a broad search for investigation leads, not a malware detector.
 
-We analyzed several IP addresses in different OSINT sources
+```spl
+index=main sourcetype="WinEventLog:Security" EventCode=4688
+ | search "powershell.exe" OR "pwsh.exe"
+ | table _time host Message
+ | sort -_time
+```
 
-1. `45.76.155.202` — C2 IP from company Notepad++ 
+The search returned PowerShell-related events, including splunk-powershell.exe. Because this is a Splunk component, the result is a useful example of why process names need context: a match is not automatically suspicious. The command line, parent process, user, and purpose must be reviewed.
 
-**VirusTotal analysis**   
-![Image 1](images/image1.png)
+![Figure 2. PowerShell-related process events returned by Splunk.](images/figure_02.png)
 
-As we can see there are 15 malicious detections
+*Figure 2. PowerShell-related process events returned by Splunk.*
 
-![Image 2](images/image2.png)
 
-![Image 3](images/image3.png)
+### 6.3. Search for Office-related process events
 
-![Image 4](images/image4.png)
+The following query searches process-creation events for Microsoft Office applications. This checks whether Office-related process activity is present in the available Security logs.
 
-## **Maltego**
+```spl
+index=main sourcetype="WinEventLog:Security" EventCode=4688
+ | search "WINWORD.EXE" OR "EXCEL.EXE" OR "POWERPNT.EXE"
+ | table _time host Message
+ | sort -_time
+```
 
-Maltego was studied as a tool for investigating relationships between different entities.
+The query returned four events in the observed search. One event showed an Office-related process record. This does not prove that Office launched PowerShell; it only confirms that matching Office process activity exists in the searched data. Parent-child process fields or Sysmon Event ID 1 would be needed to verify the execution chain.
 
-It can be used to work with information such as DNS information and other related entities.
+![Figure 3. Office-related process-creation events returned by Splunk.](images/figure_03.png)
 
-Maltego is useful when we need to look at several pieces of information together instead of checking each indicator separately.
+*Figure 3. Office-related process-creation events returned by Splunk.*
 
-**Maltego investigation**
 
-*![Image 5](images/image5.png)*
+### 6.4. Search for suspicious PowerShell command patterns
 
-The collected relationships can help us understand whether different indicators may be connected.
+A further query attempted to find command-line indicators such as EncodedCommand, DownloadString, Invoke-WebRequest, FromBase64String, and hidden-window options. In the available indexed events, this search returned zero events. This means no matching event was found in the selected index and time range; it does not prove that the activity never happened.
 
-## **Shodan**
+```spl
+index=main sourcetype="WinEventLog:Security" EventCode=4688
+ | search "EncodedCommand" OR "-enc" OR "DownloadString" OR "Invoke-WebRequest" OR "FromBase64String" OR "WindowStyle Hidden"
+ | table _time host Message
+ | sort -_time
+```
 
-Shodan was used to examine information about Internet-connected systems and services.
+![Figure 4. The suspicious-command search returned zero events in the searched data.](images/figure_04.png)
 
-The information available through Shodan can include:
+*Figure 4. The suspicious-command search returned zero events in the searched data.*
 
-* Open ports;  
-* Running services;  
-* OpenSSH  
-* Domains  
-* Countries/Cities
 
-This type of information can help us understand the infrastructure related to an IP address.
+### 6.5. Testing a Combined Office and PowerShell Search
 
-**Shodan search results:**
+A stricter search was used to check whether the same Security event message contained both PowerShell-related text and an Office application name. It returned zero events. This is not proof that the behavior never happened. Windows Security Event ID 4688 messages may not contain all fields needed for reliable parent-child correlation, and the search terms may not occur together in one message. The result shows a limitation of this query and the currently indexed data.
 
-![Image 6](images/image6.png)
+```spl
+index=main sourcetype="WinEventLog:Security" EventCode=4688
+ | search "powershell.exe" OR "pwsh.exe"
+ | search "WINWORD.EXE" OR "EXCEL.EXE" OR "POWERPNT.EXE"
+ | table _time host Message
+ | sort -_time
+```
 
-![Image 7](images/image7.png)
+![Figure 7. The combined Office and PowerShell search returned zero events.](images/figure_07.png)
 
-The information collected from Shodan can later be compared with other threat intelligence data during further analysis.
+*Figure 7. The combined Office and PowerShell search returned zero events.*
 
-**Week 2 Results**
 
-| Source | What we collect | How it can help |
-| :---: | ----- | ----- |
-|  VirusTotal | `IP: 45.76.155.202Domain: v333.funHash: 3efeb74673044e7da79ca37d6e2935fc9b89a55dDetections: alphaMointain.ai, ESET, Dr.Web and etc.Community Score: -1` | Additional context for suspicious indicators |
-| Shodan | `Open ports: 22, 80 Domain: vultrusercontent.com ASN: AS20473 Services on port 22: SSH SSH Software: OpenSSH8.9p1 Service on port 80: HTTP Web Service: nginx 1.31.3 HTTP Responce: 403 Forbidden` | Information about exposed services |
-| Maltego | Relationships between entities | Finding connections between indicators |
+### 6.6. Establishing a Baseline by Host
 
-## **Week 3 \- Data processing and exploitation**
+To establish a simple baseline, the process-creation events were grouped by host. The captured search returned 19,053 Event ID 4688 records for one Windows host. This count describes the events present in the selected index and time range; it is not a count of attacks. The number may change as new logs arrive or the search is run again.
 
-**MISP** 
+```spl
+index=main sourcetype="WinEventLog:Security" EventCode=4688
+ | stats count by host
+ | sort - count
+```
 
-Open source platform—originally known as the Malware Information Sharing Platform—used to collect, store, correlate, and share cyber security indicators, threats, and vulnerabilities among organizations.
+![Figure 8. Process-creation events grouped by host in Splunk.](images/figure_08.png)
 
-**![Image 8](images/image8.png)**  
-**![Image 9](images/image9.png)**  
-Installing MISP on our computer inside Docker Compose to eliminate dependency hell.
+*Figure 8. Process-creation events grouped by host in Splunk.*
 
-![Image 10](images/image10.png)  
-After our installation is successful, we need to go to the [http://localhost/](http://localhost/) on our web browser and we will be greeted by MISP.
 
-![Image 11](images/image11.png)
+### 6.7. Reviewing the Event Code Distribution
 
-#### **Step 2 — Creating an Event**
+The next query counted Security events by EventCode. The screenshot shows 49,158 events in the search and 36 event-code groups. The largest visible groups include Event ID 4688 (process creation), Event ID 4689 (process termination), and Event ID 4703 (token privilege adjustment). This overview helps identify which telemetry is available before choosing more focused hunt queries. Event volume alone does not establish severity or maliciousness.
 
-We created a new MISP event called **“Low-Severity Threat IOC Analysis”**.
+```spl
+index=main sourcetype="WinEventLog:Security"
+ | stats count by EventCode
+ | sort - count
+```
 
-The event was configured with the following parameters:
+![Figure 9. Security events grouped by EventCode; counts reflect this captured search.](images/figure_09.png)
 
-* Threat Level: Medium  
-* Analysis: Initial  
-* Distribution: Your organisation only
+*Figure 9. Security events grouped by EventCode; counts reflect this captured search.*
 
-This event was used to store the indicators collected during our analysis.
+The combined query and baseline searches are included as practical evidence of the hunt process. Some searches returned zero results, while broader searches returned records. These outcomes are documented as observed; they are not presented as proof that an attack occurred or that a SIEM priority rule was bypassed.
 
-![Image 12](images/image12.png)
 
-![Image 13](images/image13.png)
+## 7. Checking Sysmon Telemetry
 
-### **Step 3 — Adding and Organizing IOCs**
+Sysmon was installed and its local Operational log was checked directly in Windows PowerShell. The log existed and contained 137 records at the time of checking. The last ten records included Event ID 1 (Process Create) and Event ID 5 (Process Terminate). This confirms that Sysmon was recording local events, but it does not mean that the events had already been ingested into Splunk.
 
-The collected IOCs were added to the MISP event as attributes. We used several types of indicators:
+```spl
+Get-WinEvent -LogName "Microsoft-Windows-Sysmon/Operational" -MaxEvents 10 | Select-Object TimeCreated, Id, ProviderName
+```
 
-* IP address (`ip-dst`)  
-* Domain (`domain`)  
-* File hash (`sha256`)
+![Figure 5. Local Sysmon Operational log showing Event ID 1 and Event ID 5 records.](images/figure_05.png)
 
-For example, the IP address `87.106.48.217`, which was investigated during OSINT analysis, was added as a Network Activity attribute.
+*Figure 5. Local Sysmon Operational log showing Event ID 1 and Event ID 5 records.*
 
-Each IOC was stored according to its type and category. This helped us organize the collected data in a structured format and prepare it for further filtering and normalization.
+A search for the Sysmon log name in index=main returned zero events. This indicates that the local Sysmon log was not available through that Splunk search at the time of testing. The next step is to configure Splunk to collect the Microsoft-Windows-Sysmon/Operational channel and then verify the incoming source and sourcetype.
 
-![Image 14](images/image14.png)
+![Figure 6. Splunk search for the Sysmon log name returned zero events.](images/figure_06.png)
 
-#### **Result**
+*Figure 6. Splunk search for the Sysmon log name returned zero events.*
 
-As a result, we successfully deployed MISP, created an event, and imported the collected IOCs. The indicators were organized by their type and category and prepared for further filtering and normalization.
 
-**Filtering and Normalization** 
+## 8. Correlation and Interpretation
 
-The data was converted into .csv file for further actions.
+The intended hunt is to connect an Office process, PowerShell execution, and possible external network activity. The available Windows Security events allow searches for process creation and PowerShell-related text, but the current results do not establish that Office launched PowerShell or that PowerShell contacted an external destination. A process name match alone is insufficient.
 
-### **Filtering and Normalization**
+To complete the correlation, Sysmon Event ID 1 should be ingested into Splunk so that fields such as Image, ParentImage, CommandLine, ProcessGuid, and ParentProcessGuid can be examined. If network logging is enabled, Sysmon Event ID 3 can help connect a process with network activity. PowerShell Event ID 4104 can provide script-block content when Script Block Logging is enabled.
 
-Filtering and normalization were applied to improve the quality and consistency of the collected IOC data.
+The current practical result is therefore a partial investigation: process-related activity was found, but the full Office-to-PowerShell-to-network chain could not be confirmed with the data currently available in Splunk.
 
-| Technique | Raw Data Example | Process | Result |
-| ----- | ----- | ----- | ----- |
-| Duplicate Filtering | `87.106.48.217` appears twice | Remove duplicate values | `87.106.48.217` appears once |
-| Invalid IP Filtering | `999.999.999.999` | Check if the IP address is valid | Invalid IP is removed |
-| Empty Value Filtering | Empty domain value | Check for missing values | Empty row is removed |
-| Domain Normalization | `Example-Domain.COM` | Convert domain to lowercase | `example-domain.com` |
-| Hash Normalization | `ABCDEF123...` | Convert SHA-256 hash to lowercase | `abcdef123...` |
-| Whitespace Normalization | `87.106.48.217` | Remove extra spaces | `87.106.48.217` |
 
-After filtering and normalization, the dataset contains only valid and unique IOCs in a consistent format. The processed data can then be used for further threat intelligence analysis.
+## 9. Findings and Limitations
 
----
+- Windows Security Event ID 4688 events were available in index=main.
 
-## **Use of AI Tools**
+- PowerShell-related and Office-related process searches returned matching events.
 
-ChatGPT was used during the preparation of this project for:
-- Finding publicly available IP address information for OSINT analysis.
-- Polishing and improving the wording and readability of the report text.
+- The visible splunk-powershell.exe event was associated with Splunk and was not treated as evidence of an attack.
 
-The analysis, investigation steps, and project results were reviewed and performed by the project team.
+- The suspicious-command search returned zero events in the searched index and time range.
+
+- The local Sysmon Operational log contained 137 records, including Event ID 1 and Event ID 5, but a search in index=main did not find Sysmon events.
+
+- The hypothesis was not confirmed or rejected. More telemetry must be ingested and correlated before reaching a security conclusion.
+
+
+## 10. Connection to the Group Project
+
+This practical work supports the group project by demonstrating why a low number of matches or a single low-context event should not automatically be treated as harmless or malicious. Threat hunting requires context, suitable telemetry, and correlation. The main gap identified in this test was the absence of Sysmon events in the searched Splunk index, which limited the ability to validate the complete hypothesis.
+
+11. Conclusion
+
+This project explored hypothesis-driven threat hunting through a scenario involving potentially suspicious PowerShell activity initiated by a Microsoft Office application. The investigation demonstrated how Splunk queries can be used to examine Windows Security events, identify process-related activity, and establish a basic baseline of event data.
+
+The practical results showed that PowerShell-related and Office-related process events were present in the available logs. However, the investigation did not confirm that an Office application launched unauthorized PowerShell activity or that PowerShell subsequently contacted an external destination. The absence of matching results in some searches cannot be treated as proof that the suspected activity never occurred.
+
+A key limitation was that Sysmon events were available in the local Windows log but were not found in the searched Splunk index. Collecting and correlating Sysmon process and network events, together with PowerShell script-block logs where available, would improve visibility and allow a more complete investigation.
+
+In conclusion, the project demonstrates the importance of hypothesis-driven threat hunting, contextual analysis, and correlation across multiple data sources. It also shows why event volume or isolated low-severity events should not be used alone to determine whether activity is malicious. Although the initial hypothesis remains unconfirmed, the investigation identified a telemetry gap and practical steps for improving future threat hunts.
