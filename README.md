@@ -87,7 +87,7 @@ index=main sourcetype="WinEventLog:Security" EventCode=4688
 
 The search returned process-creation events. One visible event showed the process C:\Program Files\Splunk\bin\splunk-powershell.exe, launched by splunkd.exe. This is consistent with Splunk's own operation and must not be reported as an attack.
 
-![Figure 1. Windows Security Event ID 4688 results containing a Splunk PowerShell process.](images/figure_01.png)
+![Figure 1. Windows Security Event ID 4688 results containing a Splunk PowerShell process.](images/figure_04.png)
 
 *Figure 1. Windows Security Event ID 4688 results containing a Splunk PowerShell process.*
 
@@ -105,7 +105,7 @@ index=main sourcetype="WinEventLog:Security" EventCode=4688
 
 The search returned PowerShell-related events, including splunk-powershell.exe. Because this is a Splunk component, the result is a useful example of why process names need context: a match is not automatically suspicious. The command line, parent process, user, and purpose must be reviewed.
 
-![Figure 2. PowerShell-related process events returned by Splunk.](images/figure_02.png)
+![Figure 2. PowerShell-related process events returned by Splunk.](images/figure_09.png)
 
 *Figure 2. PowerShell-related process events returned by Splunk.*
 
@@ -123,7 +123,7 @@ index=main sourcetype="WinEventLog:Security" EventCode=4688
 
 The query returned four events in the observed search. One event showed an Office-related process record. This does not prove that Office launched PowerShell; it only confirms that matching Office process activity exists in the searched data. Parent-child process fields or Sysmon Event ID 1 would be needed to verify the execution chain.
 
-![Figure 3. Office-related process-creation events returned by Splunk.](images/figure_03.png)
+![Figure 3. Office-related process-creation events returned by Splunk.](images/figure_06.png)
 
 *Figure 3. Office-related process-creation events returned by Splunk.*
 
@@ -139,7 +139,7 @@ index=main sourcetype="WinEventLog:Security" EventCode=4688
  | sort -_time
 ```
 
-![Figure 4. The suspicious-command search returned zero events in the searched data.](images/figure_04.png)
+![Figure 4. The suspicious-command search returned zero events in the searched data.](images/figure_02.png)
 
 *Figure 4. The suspicious-command search returned zero events in the searched data.*
 
@@ -156,7 +156,7 @@ index=main sourcetype="WinEventLog:Security" EventCode=4688
  | sort -_time
 ```
 
-![Figure 7. The combined Office and PowerShell search returned zero events.](images/figure_07.png)
+![Figure 7. The combined Office and PowerShell search returned zero events.](images/figure_05.png)
 
 *Figure 7. The combined Office and PowerShell search returned zero events.*
 
@@ -171,7 +171,7 @@ index=main sourcetype="WinEventLog:Security" EventCode=4688
  | sort - count
 ```
 
-![Figure 8. Process-creation events grouped by host in Splunk.](images/figure_08.png)
+![Figure 8. Process-creation events grouped by host in Splunk.](images/figure_07.png)
 
 *Figure 8. Process-creation events grouped by host in Splunk.*
 
@@ -186,7 +186,7 @@ index=main sourcetype="WinEventLog:Security"
  | sort - count
 ```
 
-![Figure 9. Security events grouped by EventCode; counts reflect this captured search.](images/figure_09.png)
+![Figure 9. Security events grouped by EventCode; counts reflect this captured search.](images/figure_03.png)
 
 *Figure 9. Security events grouped by EventCode; counts reflect this captured search.*
 
@@ -201,13 +201,13 @@ Sysmon was installed and its local Operational log was checked directly in Windo
 Get-WinEvent -LogName "Microsoft-Windows-Sysmon/Operational" -MaxEvents 10 | Select-Object TimeCreated, Id, ProviderName
 ```
 
-![Figure 5. Local Sysmon Operational log showing Event ID 1 and Event ID 5 records.](images/figure_05.png)
+![Figure 5. Local Sysmon Operational log showing Event ID 1 and Event ID 5 records.](images/figure_08.png)
 
 *Figure 5. Local Sysmon Operational log showing Event ID 1 and Event ID 5 records.*
 
 A search for the Sysmon log name in index=main returned zero events. This indicates that the local Sysmon log was not available through that Splunk search at the time of testing. The next step is to configure Splunk to collect the Microsoft-Windows-Sysmon/Operational channel and then verify the incoming source and sourcetype.
 
-![Figure 6. Splunk search for the Sysmon log name returned zero events.](images/figure_06.png)
+![Figure 6. Splunk search for the Sysmon log name returned zero events.](images/figure_01.png)
 
 *Figure 6. Splunk search for the Sysmon log name returned zero events.*
 
