@@ -139,7 +139,7 @@ index=main sourcetype="WinEventLog:Security" EventCode=4688
  | sort -_time
 ```
 
-![Figure 4. The suspicious-command search returned zero events in the searched data.](images/figure_02.png)
+![Figure 4. The suspicious-command search returned zero events in the searched data.](images/figure_01.png)
 
 *Figure 4. The suspicious-command search returned zero events in the searched data.*
 
@@ -207,7 +207,7 @@ Get-WinEvent -LogName "Microsoft-Windows-Sysmon/Operational" -MaxEvents 10 | Sel
 
 A search for the Sysmon log name in index=main returned zero events. This indicates that the local Sysmon log was not available through that Splunk search at the time of testing. The next step is to configure Splunk to collect the Microsoft-Windows-Sysmon/Operational channel and then verify the incoming source and sourcetype.
 
-![Figure 6. Splunk search for the Sysmon log name returned zero events.](images/figure_01.png)
+![Figure 6. Splunk search for the Sysmon log name returned zero events.](images/figure_02.png)
 
 *Figure 6. Splunk search for the Sysmon log name returned zero events.*
 
