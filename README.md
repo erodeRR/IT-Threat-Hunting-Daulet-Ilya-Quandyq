@@ -1,269 +1,199 @@
-# **Analysis of SIEM Priority Evasion Techniques and Development of Threat Hunting Scenarios for Low-Severity Threats**
+# WEEK 6 — ATT&CK FRAMEWORK REPORT
 
-## **Week 1 \- Cyber Threat Intelligence Fundamentals**
+*T1059.001 — PowerShell | Weekly Project Increment*
 
-### **1\. Introduction**
+**Group topic:** Analysis of SIEM Priority Evasion Techniques and Development of Threat Hunting Scenarios for Low-Severity Threats
 
-The project focuses on the analysis of SIEM priority evasion techniques and the development of threat hunting scenarios for low-severity threats.
+## 1. Introduction
 
-In normal SOC operations, security analysts receive a large number of alerts from different security systems. These alerts can have different severity levels, and analysts usually pay more attention to alerts with higher severity.
+This weekly increment applies MITRE ATT&CK to our threat hunting project. We selected T1059.001 — PowerShell and conducted a controlled, harmless test to check whether process execution is visible in local Windows logs and Splunk. Conclusions must be based on the evidence collected.
 
-Because of the large number of alerts, low-severity alerts may receive less attention or be reviewed later. However, a low-severity alert can still represent real suspicious or malicious activity. This means that some true positive alerts can remain unnoticed among lower-priority events.
+## 2. Selected Technique
 
-The first week of the project focuses on Cyber Threat Intelligence (CTI) fundamentals. The main objectives are to understand important CTI terms, classify relevant threats, and identify sources of threat intelligence that can help with the investigation of low-severity SIEM alerts.
+T1059.001 — PowerShell describes the use of PowerShell as a command and scripting interpreter. PowerShell is used for legitimate administration as well as potentially malicious activity, so its presence alone is not sufficient to classify an event as malicious.
 
-### **2\. Cyber Threat Intelligence Glossary**
+![MITRE ATT&CK page for PowerShell](images/01_mitre_attack_powershell.png)
 
-| Term | Definition |
-| ----- | ----- |
-| **Cyber Threat Intelligence (CTI)** | Information about cyber threats, attackers, and their activities that can help security analysts during investigation. |
-| **Threat Intelligence (TI)** | Collected and analyzed information about threats that can be used to understand suspicious activity. |
-| **IOC (Indicator of Compromise)** | A piece of information that may indicate malicious activity, such as an IP address, domain, or file hash. |
-| **Tactic** | The main goal or objective of an attacker during an attack. |
-| **Technique** | A method used by an attacker to achieve a specific objective. |
-| **Procedure** | A specific way in which an attacker implements a technique. |
-| **TTPs** | Tactics, Techniques, and Procedures used by attackers. |
-| **SIEM** | A system that collects and analyzes security events from different sources. |
-| **Security Event** | A recorded activity that can be relevant to security monitoring. |
-| **Alert** | A notification generated when a security system detects potentially suspicious activity. |
-| **Severity** | A value that represents the estimated importance or risk of a security alert. |
-| **True Positive (TP)** | An alert that correctly identifies real suspicious or malicious activity. |
-| **Low-Severity Alert** | An alert with a low severity level that may receive less attention during normal SOC operations. |
-| **Correlation** | The process of connecting multiple events to identify a meaningful pattern. |
-| **Detection Rule** | A rule or condition used to identify potentially suspicious activity. |
-| **Threat Source** | A source that provides information about cyber threats, indicators, or attacker activity. |
+**Reference:** https://attack.mitre.org/techniques/T1059/001/
 
-### **3\. Classification of Relevant Threats**
+## 3. Test Environment and Procedure
 
-For our project, we identified several types of activities that can appear as low-severity alerts in a SIEM.
+- **Host:** `WIN-80IF6H6KAFQ`
+- **Date/time:** 13 октября 2026 г. 14:14:35
+- **Command:** `Write-Output "Week 6 ATT&CK test"`
 
-| Threat / Activity | Example | Possible Data Source |
-| ----- | ----- | ----- |
-| **Authentication Activity** | Multiple failed login attempts | Authentication logs |
-| **Account Discovery** | Searching for available user accounts | Windows/Linux logs |
-| **Process Discovery** | Listing running processes | Endpoint logs |
-| **Network Discovery** | Searching for hosts or network services | Network logs |
-| **Command Execution** | Suspicious command-line activity | Endpoint logs |
-| **PowerShell Activity** | Unusual PowerShell commands | Windows logs |
-| **Suspicious DNS Activity** | Requests to suspicious domains | DNS logs |
-| **Unusual Network Connections** | Connection to an unusual external IP | Firewall/network logs |
-| **Credential-related Activity** | Attempts to access credential information | Endpoint/security logs |
+The command only prints a text message and does not contact external infrastructure or modify the system.
 
-These activities are not automatically malicious. Some of them can be part of normal work.
+![PowerShell ISE test environment](images/02_test_environment_powershell.png)
 
-For example, PowerShell can be used by a system administrator, and account or process discovery can also be performed during legitimate system administration.
+## 4. Windows Security Results
 
-The important part for our project is that some of these activities can receive a low severity level even though they may become important when additional related events are considered.
+Event ID 4688 records process creation when the relevant audit policy is enabled. **Result:** 10 events found. **Notes:** 13.10.2026 14:18:17–21, Event ID 4688, Microsoft-Windows-Security-Auditing, “A new process has been created…”.
 
-### **4\. Threat Intelligence Sources**
+![Windows Security Event ID 4688 query results](images/03_windows_security_4688_events.png)
 
-We identified several sources that can provide useful threat intelligence for our project.
+The 4688 events are accessible to inspect inside the Event Viewer, which requires filtering the logs with the specific ID.
 
-#### **Open Sources**
+![Event Viewer process creation event](images/04_event_viewer_process_creation.png)
 
-**MITRE ATT\&CK**
+## 5. Sysmon Results
 
-MITRE ATT\&CK provides information about attacker tactics and techniques. It can help us understand how specific activities can be used during attacks.
+Sysmon Event ID 1 records process creation when Sysmon is installed and configured.
 
-**VirusTotal**
+**Result:** [found / not found / Sysmon unavailable]. **Notes:** [describe actual event, timestamp, and fields].
 
-VirusTotal can provide information about IP addresses, domains, file hashes, and other indicators. This information can be useful when investigating suspicious events.
+![Local Sysmon results](images/05_local_sysmon_results.png)
 
-**Shodan**
+## 6. Splunk Results
 
-Shodan provides information about Internet-connected devices and services. It can be useful for understanding exposed infrastructure and investigating suspicious network activity.
+### Windows Security query
 
-**Public Threat Reports**
+```spl
+index=main sourcetype="WinEventLog:Security" EventCode=4688
+| table _time host EventCode Message
+| sort -_time
+```
 
-Security companies and research organizations publish reports about real-world attacks, malware, attacker techniques, and indicators.
+**Result count:** 31,989 events for the last 24 hours.
 
-#### **Internal Sources**
+**Observation:** The search returned 31,989 events with Event ID 4688 during the selected time range. This event ID records process creation in Windows Security logs. The results confirm that process creation telemetry is available in Splunk. The event details include the process name, creator process, account information, and command line when available. This provides a baseline for further threat hunting. However, the presence of process creation events alone does not indicate malicious activity.
 
-A SOC can also use its own security data, including:
+![Splunk process creation search](images/06_splunk_process_creation_search.png)
 
-* SIEM logs  
-* Authentication logs  
-* DNS logs  
-* Firewall logs  
-* Endpoint logs
+### PowerShell query
 
-These sources provide information about what is happening inside the monitored environment.
+```spl
+index=main sourcetype="WinEventLog:Security" EventCode=4688 ("powershell.exe" OR "pwsh.exe")
+```
 
-### **5\. Importance of Threat Intelligence for Our Project**
+**Result count:** 513 events for the last 24 hours.
 
-Threat Intelligence is important for our project because it provides additional information that can help analysts investigate low-severity alerts.
+**Observation:** The search returned 529 events matching the PowerShell-related search criteria. However, the visible results mainly showed `splunk-powershell.exe`, launched by Splunk components such as `splunk.exe` and `splunkd.exe`. These events appear to be related to normal Splunk operations rather than confirmed malicious activity. This demonstrates that process name matching alone can produce benign results and that additional context is required to distinguish normal activity from suspicious behavior.
 
-A low-severity alert by itself may not provide enough information to determine whether the activity is suspicious. For example, a single PowerShell event can be normal administrative activity. However, additional information about the user, destination, IP address, domain, or other related events can make the activity more interesting for investigation.
+![Splunk PowerShell search](images/07_splunk_powershell_search.png)
 
-This is especially important because SOC analysts work with a large number of alerts and normally prioritize alerts according to their severity. As a result, lower-severity alerts may receive less attention.
+### Sysmon search
 
-Our project focuses on the possibility that a low-severity alert can still be a true positive. Threat Intelligence can provide additional context that helps analysts decide whether such an alert should be investigated further.
+- **Query:** `index=main "Sysmon"`
+- **Index:** `main`
+- **Sourcetype:** `WinEventLog:Security` (as displayed in the returned events)
+- **Time range:** Custom date/time range, October 9, 2026, 7:00 PM–8:00 PM
+- **Result:** Found — 11 events.
 
-The information collected during Week 1 will be used in the next stages of the project. In Week 2, we will collect relevant information from OSINT sources. In Week 3, we will process and analyze the collected data.
+The search returned 11 events containing the term “Sysmon”. However, the returned events used the `WinEventLog:Security` sourcetype and included references to the Sysmon executable. Therefore, this search does not confirm that Sysmon Operational events are being ingested into Splunk.
 
-### **6\. Week 1 Results**
+![Splunk Sysmon search](images/08_splunk_sysmon_search.png)
 
-During Week 1, we:
+## 7. ATT&CK Mapping and Interpretation
 
-* studied the basic concepts of Cyber Threat Intelligence;  
-* created a glossary of important CTI and SIEM-related terms;  
-* identified activities that can appear as low-severity alerts;  
-* classified relevant threats and activities;  
-* identified open and internal sources of threat intelligence;  
-* studied the importance of True Positive alerts for our project;  
-* connected CTI concepts with the problem of investigating low-severity SIEM alerts.
+| Item | Evidence | Interpretation |
+|---|---|---|
+| **Technique** | T1059.001 — PowerShell | Describes the behavior tested. |
+| **Process creation** | Windows Security Event ID 4688; Splunk returned 31,989 events. | Shows only what the log records. |
+| **Splunk visibility** | Windows Security events: found. Sysmon search: 11 results for `index=main "Sysmon"`, but the returned events had sourcetype `WinEventLog:Security`. | Missing results may indicate a collection, indexing, field, or time-range issue. |
+| **Attack conclusion** | A harmless PowerShell test was performed. No confirmed malicious activity was established. | Do not claim malicious activity or SIEM priority evasion without evidence. |
 
-The next step of the project is to collect relevant threat intelligence and OSINT data that can be used for further analysis.
+## 8. Limitations
 
-**Week 2 \- Data Collection Process**
+Results depend on Windows audit policy, Sysmon configuration, Splunk collection settings, index, sourcetype, and time range. A zero-result search does not prove that behavior never occurred. This harmless test checks process-execution telemetry only; it does not demonstrate a complete attack chain or SIEM priority evasion.
 
-## **VirusTotal**
+## 9. Conclusion and Next Steps
 
-VirusTotal was used to examine information about IP addresses, domains, and other indicators.
+Based on the evidence above, [summarize actual results]. The next step is to address any telemetry gaps and repeat the hunt if needed. Findings can help the team select a suitable MITRE CAR analytic for Week 7.
 
-During the analysis, we looked at information such as:
+## References
 
-* detection results;  
-* IP addresses;  
-* domain information;  
-* file hashes;  
-* security vendors' results.
-
-This information can be useful for checking whether an indicator has already been associated with suspicious or malicious activity.
-
-We analyzed several IP addresses in different OSINT sources
-
-1. `45.76.155.202` — C2 IP from company Notepad++ 
-
-**VirusTotal analysis**   
-![Image 1](images/image1.png)
-
-As we can see there are 15 malicious detections
-
-![Image 2](images/image2.png)
-
-![Image 3](images/image3.png)
-
-![Image 4](images/image4.png)
-
-## **Maltego**
-
-Maltego was studied as a tool for investigating relationships between different entities.
-
-It can be used to work with information such as DNS information and other related entities.
-
-Maltego is useful when we need to look at several pieces of information together instead of checking each indicator separately.
-
-**Maltego investigation**
-
-*![Image 5](images/image5.png)*
-
-The collected relationships can help us understand whether different indicators may be connected.
-
-## **Shodan**
-
-Shodan was used to examine information about Internet-connected systems and services.
-
-The information available through Shodan can include:
-
-* Open ports;  
-* Running services;  
-* OpenSSH  
-* Domains  
-* Countries/Cities
-
-This type of information can help us understand the infrastructure related to an IP address.
-
-**Shodan search results:**
-
-![Image 6](images/image6.png)
-
-![Image 7](images/image7.png)
-
-The information collected from Shodan can later be compared with other threat intelligence data during further analysis.
-
-**Week 2 Results**
-
-| Source | What we collect | How it can help |
-| :---: | ----- | ----- |
-|  VirusTotal | `IP: 45.76.155.202Domain: v333.funHash: 3efeb74673044e7da79ca37d6e2935fc9b89a55dDetections: alphaMointain.ai, ESET, Dr.Web and etc.Community Score: -1` | Additional context for suspicious indicators |
-| Shodan | `Open ports: 22, 80 Domain: vultrusercontent.com ASN: AS20473 Services on port 22: SSH SSH Software: OpenSSH8.9p1 Service on port 80: HTTP Web Service: nginx 1.31.3 HTTP Responce: 403 Forbidden` | Information about exposed services |
-| Maltego | Relationships between entities | Finding connections between indicators |
-
-## **Week 3 \- Data processing and exploitation**
-
-**MISP** 
-
-Open source platform—originally known as the Malware Information Sharing Platform—used to collect, store, correlate, and share cyber security indicators, threats, and vulnerabilities among organizations.
-
-**![Image 8](images/image8.png)**  
-**![Image 9](images/image9.png)**  
-Installing MISP on our computer inside Docker Compose to eliminate dependency hell.
-
-![Image 10](images/image10.png)  
-After our installation is successful, we need to go to the [http://localhost/](http://localhost/) on our web browser and we will be greeted by MISP.
-
-![Image 11](images/image11.png)
-
-#### **Step 2 — Creating an Event**
-
-We created a new MISP event called **“Low-Severity Threat IOC Analysis”**.
-
-The event was configured with the following parameters:
-
-* Threat Level: Medium  
-* Analysis: Initial  
-* Distribution: Your organisation only
-
-This event was used to store the indicators collected during our analysis.
-
-![Image 12](images/image12.png)
-
-![Image 13](images/image13.png)
-
-### **Step 3 — Adding and Organizing IOCs**
-
-The collected IOCs were added to the MISP event as attributes. We used several types of indicators:
-
-* IP address (`ip-dst`)  
-* Domain (`domain`)  
-* File hash (`sha256`)
-
-For example, the IP address `87.106.48.217`, which was investigated during OSINT analysis, was added as a Network Activity attribute.
-
-Each IOC was stored according to its type and category. This helped us organize the collected data in a structured format and prepare it for further filtering and normalization.
-
-![Image 14](images/image14.png)
-
-#### **Result**
-
-As a result, we successfully deployed MISP, created an event, and imported the collected IOCs. The indicators were organized by their type and category and prepared for further filtering and normalization.
-
-**Filtering and Normalization** 
-
-The data was converted into .csv file for further actions.
-
-### **Filtering and Normalization**
-
-Filtering and normalization were applied to improve the quality and consistency of the collected IOC data.
-
-| Technique | Raw Data Example | Process | Result |
-| ----- | ----- | ----- | ----- |
-| Duplicate Filtering | `87.106.48.217` appears twice | Remove duplicate values | `87.106.48.217` appears once |
-| Invalid IP Filtering | `999.999.999.999` | Check if the IP address is valid | Invalid IP is removed |
-| Empty Value Filtering | Empty domain value | Check for missing values | Empty row is removed |
-| Domain Normalization | `Example-Domain.COM` | Convert domain to lowercase | `example-domain.com` |
-| Hash Normalization | `ABCDEF123...` | Convert SHA-256 hash to lowercase | `abcdef123...` |
-| Whitespace Normalization | `87.106.48.217` | Remove extra spaces | `87.106.48.217` |
-
-After filtering and normalization, the dataset contains only valid and unique IOCs in a consistent format. The processed data can then be used for further threat intelligence analysis.
+- MITRE ATT&CK. PowerShell (T1059.001). https://attack.mitre.org/techniques/T1059/001/
+- MITRE ATT&CK. Command and Scripting Interpreter (T1059). https://attack.mitre.org/techniques/T1059/
+- *Introduction to Threat Hunting syllabus*, Academic Year 2026–2027, Section 3.3, Week 6 — ATT&CK Framework.
 
 ---
 
-## **Use of AI Tools**
+# WEEK 7 — USING MITRE CAR (Cyber Analytics Repository)
 
-ChatGPT was used during the preparation of this project for:
-- Finding publicly available IP address information for OSINT analysis.
-- Polishing and improving the wording and readability of the report text.
+## 1. Introduction
 
-The analysis, investigation steps, and project results were reviewed and performed by the project team.
+### 1.1 Overview
+
+In modern security operations, effective threat detection requires structured frameworks to transform raw log data into actionable alerts. Two foundational repositories maintained by MITRE are the Cyber Analytics Repository (CAR) and the ATT&CK Framework.
+
+- **MITRE CAR (Cyber Analytics Repository)** is a knowledge base of analytics designed to detect threat actor behaviors. It provides pseudocode, log data source requirements, and logic for identifying malicious activity.
+- **Analytics vs. Detections:** An Analytic represents the abstract conceptual logic or query designed to search for specific telemetry patterns (e.g., detecting `cmd.exe` spawned by `w3wp.exe`). A Detection (or Detection Rule) is the specific, vendor-tuned implementation of that analytic within an operational security platform (e.g., a Splunk alert rule or Elastic SIEM detection rule) configured with specific thresholds, suppressions, and response actions.
+
+### 1.2 Objective
+
+The objective of this assignment is to select a cyber analytic model from MITRE CAR (car.mitre.org), map it to corresponding techniques in the MITRE ATT&CK framework, and implement it as a detection rule within a SIEM environment.
+
+## 2. Selected Analytic & MITRE ATT&CK Mapping
+
+### 2.1 Selected CAR Analytic
+
+- **CAR ID:** [e.g., CAR-2016-03-002]
+- **Analytic Name:** [e.g., Create Remote Process via WMIC]
+- **Description:** [e.g., Adversaries may use Windows Management Instrumentation (WMI) to execute commands or malicious processes on remote systems. This analytic detects the invocation of `wmic.exe` with process creation arguments.]
+
+### 2.2 MITRE ATT&CK Mapping
+
+- **Technique:** [e.g., Windows Management Instrumentation (T1047)]
+- **Tactic:** [e.g., Execution / Persistence]
+- **Platform:** [e.g., Windows]
+- **Required Data Sources:** [e.g., Process Creation (e.g., Windows Event ID 4688 or Sysmon Event ID 1)]
+
+## 3. SIEM Implementation
+
+### 3.1 Data Source & Telemetry Configuration
+
+To enable detection for this analytic, the target system must forward process creation logs to the SIEM. The required log fields include:
+
+- **Image / NewProcessName** (Executable name)
+- **CommandLine / ProcessCommandLine** (Arguments passed to execution)
+- **ParentImage / ParentProcessName** (Parent process execution context)
+
+### 3.2 Detection Rule Logic (Query)
+
+The pseudo-logic provided by MITRE CAR was adapted into a vendor-specific SIEM search query.
+
+**SIEM Platform:** [e.g., Splunk / Elastic SIEM / Microsoft Sentinel / QRadar]
+
+**Query / Rule Syntax:**
+
+![Create new detection rule interface](images/09_mitre_car_rule_builder.png)
+
+## 4. Verification & Testing
+
+### 4.1 Test Execution (PoC)
+
+To verify the detection rule, a simulated attack activity was triggered in the test environment using the following command:
+
+![Detection rule monitoring dashboard](images/10_elastic_detection_rule_monitoring.png)
+
+### 4.2 Detection Results
+
+![Detection rules and details](images/11_detection_rules_details.png)
+
+![SIEM alert or search trigger results](images/12_siem_alert_search_results.png)
+
+*Figure 2: Alert / Search Trigger Result in SIEM*
+
+## 5. Discussion & Fine-Tuning
+
+### 5.1 False Positive Analysis
+
+Legitimate administrative scripts and remote management tools may utilize this process invocation. To reduce false positives, baseline exclusions can be added based on:
+
+- Approved management workstations or Service Accounts.
+- Verified administrative scripts signed by trusted publishers.
+
+### 5.2 Analytic Limitations
+
+Adversaries may attempt to bypass this analytic by bypassing command-line logging, utilizing unmonitored API calls, or using obfuscated PowerShell execution paths.
+
+## 6. Conclusion
+
+In this lab, a threat detection analytic was selected from the MITRE Cyber Analytics Repository, mapped to the MITRE ATT&CK framework, and translated into an operational SIEM detection rule. This process demonstrates how standardized threat intelligence repositories enable SOC analysts to build proactive detection engineering pipelines.
+
+## References
+
+- MITRE CAR Repository. Available at: https://car.mitre.org
+- MITRE ATT&CK Matrix for Enterprise. Available at: https://attack.mitre.org
+- MITRE CAR Documentation. Available at: https://car.mitre.org/docs/
