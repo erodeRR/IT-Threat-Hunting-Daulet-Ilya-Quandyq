@@ -1,269 +1,96 @@
-# **Analysis of SIEM Priority Evasion Techniques and Development of Threat Hunting Scenarios for Low-Severity Threats**
+# WEEK 8 — ADVERSARY EMULATION PLAN
 
-## **Week 1 \- Cyber Threat Intelligence Fundamentals**
+**Initial Access → Persistence → Data Exfiltration | ATT&CK Project Increment**
 
-### **1\. Introduction**
+**Project context:** Analysis of SIEM priority evasion techniques and development of threat hunting scenarios for low-severity threats.
 
-The project focuses on the analysis of SIEM priority evasion techniques and the development of threat hunting scenarios for low-severity threats.
+## 1. Introduction
 
-In normal SOC operations, security analysts receive a large number of alerts from different security systems. These alerts can have different severity levels, and analysts usually pay more attention to alerts with higher severity.
+This plan tests whether a Windows lab and its SIEM can observe a short sequence of attacker-like behavior: use of a local account, an autostart entry, and transfer of a synthetic file to a controlled receiver. It is a proposed exercise, not a record of completed testing. The sequence is mapped to MITRE ATT&CK so that each action has a defined objective, expected telemetry, and review criterion.
 
-Because of the large number of alerts, low-severity alerts may receive less attention or be reviewed later. However, a low-severity alert can still represent real suspicious or malicious activity. This means that some true positive alerts can remain unnoticed among lower-priority events.
+## 2. Scenario and Scope
 
-The first week of the project focuses on Cyber Threat Intelligence (CTI) fundamentals. The main objectives are to understand important CTI terms, classify relevant threats, and identify sources of threat intelligence that can help with the investigation of low-severity SIEM alerts.
+**Scenario:** An operator starts with the credentials of a precreated, low-privilege local test account on one Windows workstation. After signing in, the operator configures a harmless test program to start at the next logon. The operator then sends a small synthetic file over HTTP to an isolated lab receiver. No real user data, production host, public destination, or credential collection is in scope.
 
-### **2\. Cyber Threat Intelligence Glossary**
+**Preconditions:**
+- One approved Windows VM.
+- One isolated HTTP receiver.
+- A dedicated test account.
+- A uniquely named test file.
+- A documented exercise window.
+- Windows Security, Sysmon (if installed), and receiver or proxy logs collected into the SIEM.
+- Clock synchronization and log ingestion confirmed before beginning.
 
-| Term | Definition |
-| ----- | ----- |
-| **Cyber Threat Intelligence (CTI)** | Information about cyber threats, attackers, and their activities that can help security analysts during investigation. |
-| **Threat Intelligence (TI)** | Collected and analyzed information about threats that can be used to understand suspicious activity. |
-| **IOC (Indicator of Compromise)** | A piece of information that may indicate malicious activity, such as an IP address, domain, or file hash. |
-| **Tactic** | The main goal or objective of an attacker during an attack. |
-| **Technique** | A method used by an attacker to achieve a specific objective. |
-| **Procedure** | A specific way in which an attacker implements a technique. |
-| **TTPs** | Tactics, Techniques, and Procedures used by attackers. |
-| **SIEM** | A system that collects and analyzes security events from different sources. |
-| **Security Event** | A recorded activity that can be relevant to security monitoring. |
-| **Alert** | A notification generated when a security system detects potentially suspicious activity. |
-| **Severity** | A value that represents the estimated importance or risk of a security alert. |
-| **True Positive (TP)** | An alert that correctly identifies real suspicious or malicious activity. |
-| **Low-Severity Alert** | An alert with a low severity level that may receive less attention during normal SOC operations. |
-| **Correlation** | The process of connecting multiple events to identify a meaningful pattern. |
-| **Detection Rule** | A rule or condition used to identify potentially suspicious activity. |
-| **Threat Source** | A source that provides information about cyber threats, indicators, or attacker activity. |
+## 3. Selected ATT&CK Techniques
 
-### **3\. Classification of Relevant Threats**
+| Phase | ATT&CK technique | Emulated behavior | Evidence to collect |
+|---|---|---|---|
+| Initial access | **T1078.003 — Valid Accounts: Local Accounts** | Sign in to the lab workstation using the dedicated local test account. | Windows Security Event ID 4624; account, host, logon type, source, and timestamp. |
+| Persistence | **T1547.001 — Registry Run Keys / Startup Folder** | Create a current-user autostart entry for a benign marker program, then sign out and back in. | Registry change (Sysmon Event ID 13 if configured); process creation (Event ID 4688 or Sysmon Event ID 1). |
+| Exfiltration | **T1048.003 — Exfiltration Over Unencrypted Non-C2 Protocol** | Send only the synthetic file by HTTP to the separate lab receiver. | HTTP request, destination, byte count, receiver receipt, and file hash. |
 
-For our project, we identified several types of activities that can appear as low-severity alerts in a SIEM.
+### ATT&CK reference screenshots
 
-| Threat / Activity | Example | Possible Data Source |
-| ----- | ----- | ----- |
-| **Authentication Activity** | Multiple failed login attempts | Authentication logs |
-| **Account Discovery** | Searching for available user accounts | Windows/Linux logs |
-| **Process Discovery** | Listing running processes | Endpoint logs |
-| **Network Discovery** | Searching for hosts or network services | Network logs |
-| **Command Execution** | Suspicious command-line activity | Endpoint logs |
-| **PowerShell Activity** | Unusual PowerShell commands | Windows logs |
-| **Suspicious DNS Activity** | Requests to suspicious domains | DNS logs |
-| **Unusual Network Connections** | Connection to an unusual external IP | Firewall/network logs |
-| **Credential-related Activity** | Attempts to access credential information | Endpoint/security logs |
+**Figure 1. T1078.003 — Valid Accounts: Local Accounts**  
+![MITRE ATT&CK screenshot for T1078.003](images/figure_01.png)
 
-These activities are not automatically malicious. Some of them can be part of normal work.
+**Figure 2. T1547.001 — Registry Run Keys / Startup Folder**  
+![MITRE ATT&CK screenshot for T1547.001](images/figure_02.png)
 
-For example, PowerShell can be used by a system administrator, and account or process discovery can also be performed during legitimate system administration.
+**Figure 3. T1048.003 — Exfiltration Over Unencrypted Non-C2 Protocol**  
+![MITRE ATT&CK screenshot for T1048.003](images/figure_03.png)
 
-The important part for our project is that some of these activities can receive a low severity level even though they may become important when additional related events are considered.
+## 4. Test Procedure
 
-### **4\. Threat Intelligence Sources**
+### 4.1 Preparation
 
-We identified several sources that can provide useful threat intelligence for our project.
+Record the VM name, test account, receiver address, start time, file name, file size, and SHA-256 hash in the exercise worksheet. Label the file as synthetic test data. Verify that the receiver accepts connections only from the lab network and that the intended telemetry arrives in the SIEM. Capture a pretest baseline for account logons, autostart entries, and HTTP traffic.
 
-#### **Open Sources**
+### 4.2 Initial access
 
-**MITRE ATT\&CK**
+Use the supplied local test account to sign in to the approved VM once. Record the exact sign-in time and session details. This emulates abuse of already obtained credentials; it does not test how credentials were stolen. Check for a matching Security Event ID 4624 and confirm that it can be located by account and host in the SIEM.
 
-MITRE ATT\&CK provides information about attacker tactics and techniques. It can help us understand how specific activities can be used during attacks.
+### 4.3 Persistence
 
-**VirusTotal**
+Under the test account, add one clearly labeled entry to that user’s Run key or Startup folder that starts a harmless marker program. The marker should write only a timestamped “emulation test” message to a lab file. Sign out and back in once. Confirm the entry exists, the marker runs at logon, and the registry or file change and subsequent process creation are visible. Record the entry name and path so it can be removed.
 
-VirusTotal can provide information about IP addresses, domains, file hashes, and other indicators. This information can be useful when investigating suspicious events.
+### 4.4 Data exfiltration simulation
 
-**Shodan**
+Create a small synthetic text file containing only the exercise identifier and dummy values. Transfer that file over plain HTTP from the VM to the isolated receiver, which is separate from any command-and-control channel. Compare the receiver’s file hash and byte count with the original; retain the request and receiver logs. This validates observable transfer behavior only, with no sensitive data leaving the lab.
 
-Shodan provides information about Internet-connected devices and services. It can be useful for understanding exposed infrastructure and investigating suspicious network activity.
+## 5. Evidence and Evaluation
 
-**Public Threat Reports**
+For each phase, store the execution timestamp and a screenshot or exported event showing the host, account, action, and relevant fields. Correlate the three stages by test account, host, and time window. In the SIEM, search for the 4624 logon, the autostart modification plus logon-triggered process, and the HTTP transfer to the lab receiver. Do not infer success from a broad event count alone.
 
-Security companies and research organizations publish reports about real-world attacks, malware, attacker techniques, and indicators.
+| Phase | Pass condition | Record if absent |
+|---|---|---|
+| Initial access | Test logon is visible locally and in the SIEM. | Check audit policy, account name, host filter, and collection delay. |
+| Persistence | Autostart entry and marker execution after sign-in are both evidenced. | Check Sysmon/registry coverage and process command-line collection. |
+| Exfiltration | Receiver obtains matching synthetic file; network logs identify transfer. | Check receiver access, proxy/flow coverage, byte fields, and time range. |
 
-#### **Internal Sources**
+## 6. Limitations and Cleanup
 
-A SOC can also use its own security data, including:
+A dedicated account sign-in is a simplified stand-in for misuse of compromised credentials, and an isolated HTTP transfer cannot fully reproduce real data theft. Sysmon events depend on its installed configuration; Security Event IDs 4688 and 4624 depend on audit settings and ingestion. A missing SIEM event may reflect collection or query gaps rather than absence of the activity. This three-stage plan omits discovery, collection, staging, and command and control.
 
-* SIEM logs  
-* Authentication logs  
-* DNS logs  
-* Firewall logs  
-* Endpoint logs
+After evidence is saved:
+- Remove the autostart entry and marker file.
+- Delete the synthetic file from the VM and receiver.
+- Disable or reset the test account.
+- Verify that no test entry remains.
+- Record actual timestamps, event IDs, SIEM queries, observed counts, gaps, and cleanup confirmation in the final exercise report.
 
-These sources provide information about what is happening inside the monitored environment.
+## 7. Conclusion and Next Steps
 
-### **5\. Importance of Threat Intelligence for Our Project**
+The plan gives a small, repeatable chain for testing whether the SIEM can connect a local account logon, a persistence change, and an outbound file transfer. Run it only in the defined lab, compare actual evidence with the pass conditions, and use any visibility gaps to prioritize audit configuration, forwarding, and correlation improvements. No detection or successful exfiltration is claimed until the exercise is performed and the records are reviewed.
 
-Threat Intelligence is important for our project because it provides additional information that can help analysts investigate low-severity alerts.
+## References
 
-A low-severity alert by itself may not provide enough information to determine whether the activity is suspicious. For example, a single PowerShell event can be normal administrative activity. However, additional information about the user, destination, IP address, domain, or other related events can make the activity more interesting for investigation.
-
-This is especially important because SOC analysts work with a large number of alerts and normally prioritize alerts according to their severity. As a result, lower-severity alerts may receive less attention.
-
-Our project focuses on the possibility that a low-severity alert can still be a true positive. Threat Intelligence can provide additional context that helps analysts decide whether such an alert should be investigated further.
-
-The information collected during Week 1 will be used in the next stages of the project. In Week 2, we will collect relevant information from OSINT sources. In Week 3, we will process and analyze the collected data.
-
-### **6\. Week 1 Results**
-
-During Week 1, we:
-
-* studied the basic concepts of Cyber Threat Intelligence;  
-* created a glossary of important CTI and SIEM-related terms;  
-* identified activities that can appear as low-severity alerts;  
-* classified relevant threats and activities;  
-* identified open and internal sources of threat intelligence;  
-* studied the importance of True Positive alerts for our project;  
-* connected CTI concepts with the problem of investigating low-severity SIEM alerts.
-
-The next step of the project is to collect relevant threat intelligence and OSINT data that can be used for further analysis.
-
-**Week 2 \- Data Collection Process**
-
-## **VirusTotal**
-
-VirusTotal was used to examine information about IP addresses, domains, and other indicators.
-
-During the analysis, we looked at information such as:
-
-* detection results;  
-* IP addresses;  
-* domain information;  
-* file hashes;  
-* security vendors' results.
-
-This information can be useful for checking whether an indicator has already been associated with suspicious or malicious activity.
-
-We analyzed several IP addresses in different OSINT sources
-
-1. `45.76.155.202` — C2 IP from company Notepad++ 
-
-**VirusTotal analysis**   
-![Image 1](images/image1.png)
-
-As we can see there are 15 malicious detections
-
-![Image 2](images/image2.png)
-
-![Image 3](images/image3.png)
-
-![Image 4](images/image4.png)
-
-## **Maltego**
-
-Maltego was studied as a tool for investigating relationships between different entities.
-
-It can be used to work with information such as DNS information and other related entities.
-
-Maltego is useful when we need to look at several pieces of information together instead of checking each indicator separately.
-
-**Maltego investigation**
-
-*![Image 5](images/image5.png)*
-
-The collected relationships can help us understand whether different indicators may be connected.
-
-## **Shodan**
-
-Shodan was used to examine information about Internet-connected systems and services.
-
-The information available through Shodan can include:
-
-* Open ports;  
-* Running services;  
-* OpenSSH  
-* Domains  
-* Countries/Cities
-
-This type of information can help us understand the infrastructure related to an IP address.
-
-**Shodan search results:**
-
-![Image 6](images/image6.png)
-
-![Image 7](images/image7.png)
-
-The information collected from Shodan can later be compared with other threat intelligence data during further analysis.
-
-**Week 2 Results**
-
-| Source | What we collect | How it can help |
-| :---: | ----- | ----- |
-|  VirusTotal | `IP: 45.76.155.202Domain: v333.funHash: 3efeb74673044e7da79ca37d6e2935fc9b89a55dDetections: alphaMointain.ai, ESET, Dr.Web and etc.Community Score: -1` | Additional context for suspicious indicators |
-| Shodan | `Open ports: 22, 80 Domain: vultrusercontent.com ASN: AS20473 Services on port 22: SSH SSH Software: OpenSSH8.9p1 Service on port 80: HTTP Web Service: nginx 1.31.3 HTTP Responce: 403 Forbidden` | Information about exposed services |
-| Maltego | Relationships between entities | Finding connections between indicators |
-
-## **Week 3 \- Data processing and exploitation**
-
-**MISP** 
-
-Open source platform—originally known as the Malware Information Sharing Platform—used to collect, store, correlate, and share cyber security indicators, threats, and vulnerabilities among organizations.
-
-**![Image 8](images/image8.png)**  
-**![Image 9](images/image9.png)**  
-Installing MISP on our computer inside Docker Compose to eliminate dependency hell.
-
-![Image 10](images/image10.png)  
-After our installation is successful, we need to go to the [http://localhost/](http://localhost/) on our web browser and we will be greeted by MISP.
-
-![Image 11](images/image11.png)
-
-#### **Step 2 — Creating an Event**
-
-We created a new MISP event called **“Low-Severity Threat IOC Analysis”**.
-
-The event was configured with the following parameters:
-
-* Threat Level: Medium  
-* Analysis: Initial  
-* Distribution: Your organisation only
-
-This event was used to store the indicators collected during our analysis.
-
-![Image 12](images/image12.png)
-
-![Image 13](images/image13.png)
-
-### **Step 3 — Adding and Organizing IOCs**
-
-The collected IOCs were added to the MISP event as attributes. We used several types of indicators:
-
-* IP address (`ip-dst`)  
-* Domain (`domain`)  
-* File hash (`sha256`)
-
-For example, the IP address `87.106.48.217`, which was investigated during OSINT analysis, was added as a Network Activity attribute.
-
-Each IOC was stored according to its type and category. This helped us organize the collected data in a structured format and prepare it for further filtering and normalization.
-
-![Image 14](images/image14.png)
-
-#### **Result**
-
-As a result, we successfully deployed MISP, created an event, and imported the collected IOCs. The indicators were organized by their type and category and prepared for further filtering and normalization.
-
-**Filtering and Normalization** 
-
-The data was converted into .csv file for further actions.
-
-### **Filtering and Normalization**
-
-Filtering and normalization were applied to improve the quality and consistency of the collected IOC data.
-
-| Technique | Raw Data Example | Process | Result |
-| ----- | ----- | ----- | ----- |
-| Duplicate Filtering | `87.106.48.217` appears twice | Remove duplicate values | `87.106.48.217` appears once |
-| Invalid IP Filtering | `999.999.999.999` | Check if the IP address is valid | Invalid IP is removed |
-| Empty Value Filtering | Empty domain value | Check for missing values | Empty row is removed |
-| Domain Normalization | `Example-Domain.COM` | Convert domain to lowercase | `example-domain.com` |
-| Hash Normalization | `ABCDEF123...` | Convert SHA-256 hash to lowercase | `abcdef123...` |
-| Whitespace Normalization | `87.106.48.217` | Remove extra spaces | `87.106.48.217` |
-
-After filtering and normalization, the dataset contains only valid and unique IOCs in a consistent format. The processed data can then be used for further threat intelligence analysis.
+- MITRE Center for Threat-Informed Defense. [Adversary Emulation Library](https://ctid.mitre.org/resources/adversary-emulation-library/).
+- MITRE ATT&CK. [Valid Accounts: Local Accounts (T1078.003)](https://attack.mitre.org/techniques/T1078/003/).
+- MITRE ATT&CK. [Registry Run Keys / Startup Folder (T1547.001)](https://attack.mitre.org/techniques/T1547/001/).
+- MITRE ATT&CK. [Exfiltration Over Unencrypted Non-C2 Protocol (T1048.003)](https://attack.mitre.org/techniques/T1048/003/).
+- MITRE ATT&CK. Detection strategies DET0407, DET0365, and DET0149. [Detection Strategies](https://attack.mitre.org/detectionstrategies/).
 
 ---
 
-## **Use of AI Tools**
-
-ChatGPT was used during the preparation of this project for:
-- Finding publicly available IP address information for OSINT analysis.
-- Polishing and improving the wording and readability of the report text.
-
-The analysis, investigation steps, and project results were reviewed and performed by the project team.
+**Status:** This is a proposed plan, not a completed test. Add real screenshots, event exports, actual query results, and cleanup confirmation after the approved lab exercise.
