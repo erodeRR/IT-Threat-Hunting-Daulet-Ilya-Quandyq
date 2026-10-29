@@ -81,6 +81,4 @@ The plan gives a small, repeatable chain for testing whether the SIEM can connec
 - MITRE ATT&CK. [Exfiltration Over Unencrypted Non-C2 Protocol (T1048.003)](https://attack.mitre.org/techniques/T1048/003/).
 - MITRE ATT&CK. Detection strategies DET0407, DET0365, and DET0149. [Detection Strategies](https://attack.mitre.org/detectionstrategies/).
 
----
 
-**Status:** This is a proposed plan, not a completed test. Add real screenshots, event exports, actual query results, and cleanup confirmation after the approved lab exercise.
