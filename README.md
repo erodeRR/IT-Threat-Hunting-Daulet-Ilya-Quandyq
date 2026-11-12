@@ -1,269 +1,148 @@
-# **Analysis of SIEM Priority Evasion Techniques and Development of Threat Hunting Scenarios for Low-Severity Threats**
+# APT29 TTP Analysis and ATT&CK Mapping
 
-## **Week 1 \- Cyber Threat Intelligence Fundamentals**
+> Project context: Analysis of SIEM Priority Evasion Techniques and Development of Threat Hunting Scenarios for Low-Severity Threats
 
-### **1\. Introduction**
+Lab 9 - Atomic Red Team
 
-The project focuses on the analysis of SIEM priority evasion techniques and the development of threat hunting scenarios for low-severity threats.
+# 1. Introduction
 
-In normal SOC operations, security analysts receive a large number of alerts from different security systems. These alerts can have different severity levels, and analysts usually pay more attention to alerts with higher severity.
+This report describes a small Atomic Red Team exercise on macOS and the analysis of its execution records in Splunk Cloud. Atomic Red Team is a collection of focused tests mapped to MITRE ATT&CK. Each test reproduces a specific behavior so that analysts can examine execution, visibility, and detection. The official workflow permits manual execution of documented test commands, followed by review and cleanup.
 
-Because of the large number of alerts, low-severity alerts may receive less attention or be reviewed later. However, a low-severity alert can still represent real suspicious or malicious activity. This means that some true positive alerts can remain unnoticed among lower-priority events.
+2. Environment and Scope
 
-The first week of the project focuses on Cyber Threat Intelligence (CTI) fundamentals. The main objectives are to understand important CTI terms, classify relevant threats, and identify sources of threat intelligence that can help with the investigation of low-severity SIEM alerts.
+The exercise uses a Mac as the test endpoint, Terminal for manual command execution, and Splunk Cloud Platform for indexing and searching results. The local recording script saves the UTC start time, technique ID, test number, exit code, combined command output, and record type to results.csv. Separate text logs retain the output of each test. Test execution and ingestion outcomes are recorded in the fields below.
 
-### **2\. Cyber Threat Intelligence Glossary**
+macOS version: 27.0.1
+  Splunk index: main
 
-| Term | Definition |
-| ----- | ----- |
-| **Cyber Threat Intelligence (CTI)** | Information about cyber threats, attackers, and their activities that can help security analysts during investigation. |
-| **Threat Intelligence (TI)** | Collected and analyzed information about threats that can be used to understand suspicious activity. |
-| **IOC (Indicator of Compromise)** | A piece of information that may indicate malicious activity, such as an IP address, domain, or file hash. |
-| **Tactic** | The main goal or objective of an attacker during an attack. |
-| **Technique** | A method used by an attacker to achieve a specific objective. |
-| **Procedure** | A specific way in which an attacker implements a technique. |
-| **TTPs** | Tactics, Techniques, and Procedures used by attackers. |
-| **SIEM** | A system that collects and analyzes security events from different sources. |
-| **Security Event** | A recorded activity that can be relevant to security monitoring. |
-| **Alert** | A notification generated when a security system detects potentially suspicious activity. |
-| **Severity** | A value that represents the estimated importance or risk of a security alert. |
-| **True Positive (TP)** | An alert that correctly identifies real suspicious or malicious activity. |
-| **Low-Severity Alert** | An alert with a low severity level that may receive less attention during normal SOC operations. |
-| **Correlation** | The process of connecting multiple events to identify a meaningful pattern. |
-| **Detection Rule** | A rule or condition used to identify potentially suspicious activity. |
-| **Threat Source** | A source that provides information about cyber threats, indicators, or attacker activity. |
+3 Selected Tests and ATTACK Mapping
 
-### **3\. Classification of Relevant Threats**
+| Tactic and technique | Atomic test | Behavior and expected evidence |
+| --- | --- | --- |
+| Execution<br>T1059.004<br>Unix Shell | #1 Create and Execute Bash Shell Script | A shell script prints a greeting and sends four pings to localhost. Expected evidence: greeting, ping output, and an exit code. |
+| Discovery<br>T1082<br>System Information Discovery | #8 Hostname Discovery | The hostname command returns the endpoint name. Expected evidence: hostname output and an exit code. |
 
-For our project, we identified several types of activities that can appear as low-severity alerts in a SIEM.
+Both selected tests support macOS. For T1059.004, the script path is changed to art.sh inside the lab folder and the ping destination to 127.0.0.1. T1082 provides a second macOS-compatible example; credential dumping under T1003 is outside this exercise.
 
-| Threat / Activity | Example | Possible Data Source |
-| ----- | ----- | ----- |
-| **Authentication Activity** | Multiple failed login attempts | Authentication logs |
-| **Account Discovery** | Searching for available user accounts | Windows/Linux logs |
-| **Process Discovery** | Listing running processes | Endpoint logs |
-| **Network Discovery** | Searching for hosts or network services | Network logs |
-| **Command Execution** | Suspicious command-line activity | Endpoint logs |
-| **PowerShell Activity** | Unusual PowerShell commands | Windows logs |
-| **Suspicious DNS Activity** | Requests to suspicious domains | DNS logs |
-| **Unusual Network Connections** | Connection to an unusual external IP | Firewall/network logs |
-| **Credential-related Activity** | Attempts to access credential information | Endpoint/security logs |
+4. Test Execution and Local Evidence
 
-These activities are not automatically malicious. Some of them can be part of normal work.
+![Screenshot](images/image_6.png)
 
-For example, PowerShell can be used by a system administrator, and account or process discovery can also be performed during legitimate system administration.
+Unix Shell Execution
 
-The important part for our project is that some of these activities can receive a low severity level even though they may become important when additional related events are considered.
+The first test creates art.sh, marks it executable, and runs it through sh. Its contents are a greeting and four ICMP requests to 127.0.0.1. The loopback destination keeps the network activity on the test endpoint. This is a manual execution of the selected atomic with adjusted inputs.
 
-### **4\. Threat Intelligence Sources**
+printf "%s\n" "echo Hello from the Atomic Red Team" \
+  "ping -c 4 127.0.0.1" > art.sh
+chmod +x art.sh
+sh art.sh
 
-We identified several sources that can provide useful threat intelligence for our project.
+Observed exit code: [2]    Observed output: [insert brief finding]
 
-#### **Open Sources**
+![Screenshot](images/image_4.png)
 
-**MITRE ATT\&CK**
+Figure 1. Show the test identifier, greeting, ping responses, and recorded exit code.
 
-MITRE ATT\&CK provides information about attacker tactics and techniques. It can help us understand how specific activities can be used during attacks.
+Hostname Discovery
 
-**VirusTotal**
+The second test runs hostname through the shell and records its output. This models a simple discovery behavior that can also occur during ordinary administration. It requires no credential access and makes no configuration changes. [3]
 
-VirusTotal can provide information about IP addresses, domains, file hashes, and other indicators. This information can be useful when investigating suspicious events.
+hostname
 
-**Shodan**
+Observed exit code: [0]    Returned hostname: [quandyqs-MacBook-Pro.local]
 
-Shodan provides information about Internet-connected devices and services. It can be useful for understanding exposed infrastructure and investigating suspicious network activity.
+![Screenshot](images/image_1.png)
 
-**Public Threat Reports**
+Figure 2. Show the hostname result and recorded exit code.
 
-Security companies and research organizations publish reports about real-world attacks, malware, attacker techniques, and indicators.
+5 Recording Results in Splunk Cloud
 
-#### **Internal Sources**
+Data Ingestion
 
-A SOC can also use its own security data, including:
+The evidence source is results.csv from the local test folder. The ingestion method is Settings → Add Data → Upload, with the csv source type and main index. The preview is used to check that the header becomes field names, the two data rows become separate events, and the timestamp is interpreted as UTC. Splunk supports file uploads and structured CSV field extraction. [4, 5]
 
-* SIEM logs  
-* Authentication logs  
-* DNS logs  
-* Firewall logs  
-* Endpoint logs
+![Screenshot](images/image_5.jpg)
 
-These sources provide information about what is happening inside the monitored environment.
+Figure 3. Show the CSV source type, recognized fields, and two test records.
 
-### **5\. Importance of Threat Intelligence for Our Project**
+Event Review
 
-Threat Intelligence is important for our project because it provides additional information that can help analysts investigate low-severity alerts.
+The event review uses Search & Reporting with the time range set to All time. The search below displays the technique, test number, exit code, and command output for each indexed record. The timestamp and output are compared with the local logs to check consistency.
 
-A low-severity alert by itself may not provide enough information to determine whether the activity is suspicious. For example, a single PowerShell event can be normal administrative activity. However, additional information about the user, destination, IP address, domain, or other related events can make the activity more interesting for investigation.
+index=main source="*results.csv"
+| table _time technique test_id exit_code output record_type
 
-This is especially important because SOC analysts work with a large number of alerts and normally prioritize alerts according to their severity. As a result, lower-severity alerts may receive less attention.
+![Screenshot](images/image_3.jpg)
 
-Our project focuses on the possibility that a low-severity alert can still be a true positive. Threat Intelligence can provide additional context that helps analysts decide whether such an alert should be investigated further.
+![Screenshot](images/image_2.jpg)
 
-The information collected during Week 1 will be used in the next stages of the project. In Week 2, we will collect relevant information from OSINT sources. In Week 3, we will process and analyze the collected data.
+These events are labeled manual_atomic_execution. They are records generated by the test wrapper, rather than independently collected endpoint process events. Their presence demonstrates result ingestion; it does not establish that an attack detection rule fired.
 
-### **6\. Week 1 Results**
+6 Results and Analysis
 
-During Week 1, we:
+| Test | Observed local result | Observed SIEM result |
+| --- | --- | --- |
+| T1059.004<br>Atomic #1 | Exit code:2<br>Greeting and ping result: Hello from the Atomic Red Team | Record present: Yes, failed |
+| T1082<br>Atomic #8 | Exit code: 0<br>Hostname: Quandyqs-MacBook-Pro.local | Record present: Yes, completed |
 
-* studied the basic concepts of Cyber Threat Intelligence;  
-* created a glossary of important CTI and SIEM-related terms;  
-* identified activities that can appear as low-severity alerts;  
-* classified relevant threats and activities;  
-* identified open and internal sources of threat intelligence;  
-* studied the importance of True Positive alerts for our project;  
-* connected CTI concepts with the problem of investigating low-severity SIEM alerts.
+An exit code of 0 supports successful command completion and must be read together with the output. A successful run can still be undetected. If a local result exists but no matching event is searchable, the first checks are the upload, selected index, time range, and field parsing. Repeated uploads can create duplicate events, so the event count is compared with the two local test records.
 
-The next step of the project is to collect relevant threat intelligence and OSINT data that can be used for further analysis.
+7. SIEM Interpretation for the Project
 
-**Week 2 \- Data Collection Process**
+Shell execution and hostname discovery have limited meaning in isolation because both are common administrative actions. For the project, a useful hunting hypothesis is that unexpected shell execution followed by discovery on the same endpoint may deserve review even when individual events have low severity. Testing that relationship requires independently collected process events with host, account, command line, parent process, and timestamps. The current CSV records support execution analysis but do not validate that correlation.
 
-## **VirusTotal**
+8. Limitations and Conclusion
 
-VirusTotal was used to examine information about IP addresses, domains, and other indicators.
+The exercise covers two basic macOS behaviors and manual result ingestion. It does not measure credential dumping, prevention, automatic alerting, or detection coverage. The test commands run on the authorized endpoint, with localhost used for the ping destination. Hostnames visible in submitted screenshots should be reviewed for unnecessary personal information.
 
-During the analysis, we looked at information such as:
+Overall execution outcome: [insert finding supported by local logs]. SIEM ingestion outcome: [insert finding supported by the event search]. The exercise links selected Atomic tests to searchable evidence and distinguishes command completion from security detection. A next step is to collect endpoint process telemetry and evaluate a specific detection rule against the same test activity.
 
-* detection results;  
-* IP addresses;  
-* domain information;  
-* file hashes;  
-* security vendors' results.
+Lab 10 - APT29 TTP ANALYSIS AND ATTACK MAPPING
 
-This information can be useful for checking whether an indicator has already been associated with suspicious or malicious activity.
+Project context: Analysis of SIEM Priority Evasion Techniques and Development of Threat Hunting Scenarios for Low-Severity Threats
 
-We analyzed several IP addresses in different OSINT sources
+# 1. Introduction
 
-1. `45.76.155.202` — C2 IP from company Notepad++ 
+This report analyzes selected tactics, techniques, and procedures (TTPs) attributed to APT29 in the SolarWinds Compromise and maps them to MITRE ATT&CK. The selected behaviors show how a trusted software update could lead to execution, persistence, email collection, and exfiltration. The observations come from public campaign reporting and the ATT&CK campaign record; no local test, SIEM hunt, or incident investigation was performed for this report. [1]
 
-**VirusTotal analysis**   
-![Image 1](images/image1.png)
+# 2. Selected Group and Campaign
 
-As we can see there are 15 malicious detections
+APT29 (G0016), also called Midnight Blizzard and The Dukes, is associated in ATT&CK with the SolarWinds Compromise (C0024). The campaign was discovered in December 2020. ATT&CK records that a compromised SolarWinds Orion update gave initial network access to some victims, followed by additional activity in a smaller subset of affected organizations. The rows below are a representative set of documented campaign behaviors, not a claim that every victim experienced the full sequence. [1, 2]
 
-![Image 2](images/image2.png)
+# 3. Observed Behavior and ATT&CK Mapping
 
-![Image 3](images/image3.png)
+| Stage and tactic | Technique | Reported APT29 behavior | Analyst evidence to seek |
+| --- | --- | --- | --- |
+| Initial access | T1195.002<br>Compromise Software Supply Chain | A trojanized Orion software update gave access to some victim networks. [1] | Update provenance; affected product versions; service and network activity after update. |
+| Execution | T1059.001<br>PowerShell | PowerShell was used to create remote tasks, inspect settings, and perform other commands. [1] | Process creation and PowerShell logging; parent process, account, host, command line. |
+| Persistence / execution | T1053.005<br>Scheduled Task | APT29 created or modified tasks, including a task associated with SUNSPOT persistence. [1] | Task creation/change records; task XML, action, creator, and subsequent process start. |
+| Collection | T1114.002<br>Remote Email Collection | Targeted email from executives and IT staff was collected through Exchange mailbox export activity. [1] | Exchange administrative audit and mailbox access; export requests, accounts, and time. |
+| Exfiltration | T1048.002<br>Encrypted Non-C2 Protocol | Collected data staged on a victim OWA server was retrieved over HTTPS. [1] | OWA/web server access and egress records; archive creation and transfer timing. |
 
-![Image 4](images/image4.png)
+# 4. How the Techniques Fit Together
 
-## **Maltego**
+The compromised update provided a plausible entry point because the code arrived through a trusted software distribution path. PowerShell and scheduled tasks then supported execution and continuing access. Mailbox export activity served the collection objective, while an HTTPS retrieval of staged data represented exfiltration. ATT&CK documents these behaviors within the campaign, but the public record does not establish this exact five-step order for every victim. [1]
 
-Maltego was studied as a tool for investigating relationships between different entities.
+# 5. SIEM Interpretation for the Project
 
-It can be used to work with information such as DNS information and other related entities.
+A low-priority process event, a task change, or an ordinary-looking HTTPS request has limited meaning alone. A threat hunt can join records by host, account, and time window: unusual activity following an Orion update, PowerShell execution, a newly created or altered task, mailbox export activity, and web access to a staged archive. The result should be reviewed against approved administration and update activity before escalation. This is a proposed correlation hypothesis, not a tested detection rule.
 
-Maltego is useful when we need to look at several pieces of information together instead of checking each indicator separately.
+| Telemetry | Question for the analyst | Interpretation limit |
+| --- | --- | --- |
+| Endpoint and task logs | Did an unexpected account create a task after suspicious execution? | Administrative maintenance can produce the same event types. |
+| Exchange audit logs | Was a targeted mailbox export or unusual delegated access recorded? | A missing audit record may reflect collection settings. |
+| Web and egress logs | Did archive access or outbound HTTPS align with collection? | Encrypted traffic metadata alone does not prove data theft. |
 
-**Maltego investigation**
+# 6. Limitations
 
-*![Image 5](images/image5.png)*
+ATT&CK is a curated summary of public reporting, and some campaign procedures are sourced from different victim investigations. This report does not independently verify attribution or reconstruct a single complete intrusion. Mapping a behavior to an ATT&CK ID describes what was reported; it does not establish that a local environment contains that behavior. Detection quality also depends on audit policy, retention, source coverage, field extraction, and SIEM time range.
 
-The collected relationships can help us understand whether different indicators may be connected.
+# 7. Conclusion and Next Steps
 
-## **Shodan**
+The selected APT29 case illustrates a progression from supply chain access to execution, persistence, collection, and exfiltration, with five mapped ATT&CK techniques. For the SIEM project, the useful next step is to turn one relationship—such as an unexpected task change following PowerShell activity—into a bounded hunting hypothesis, verify the required data sources, and distinguish routine administration from a suspicious chain before claiming detection.
 
-Shodan was used to examine information about Internet-connected systems and services.
+# References
 
-The information available through Shodan can include:
+[1] MITRE ATT&CK. SolarWinds Compromise (C0024). https://attack.mitre.org/campaigns/C0024/
 
-* Open ports;  
-* Running services;  
-* OpenSSH  
-* Domains  
-* Countries/Cities
-
-This type of information can help us understand the infrastructure related to an IP address.
-
-**Shodan search results:**
-
-![Image 6](images/image6.png)
-
-![Image 7](images/image7.png)
-
-The information collected from Shodan can later be compared with other threat intelligence data during further analysis.
-
-**Week 2 Results**
-
-| Source | What we collect | How it can help |
-| :---: | ----- | ----- |
-|  VirusTotal | `IP: 45.76.155.202Domain: v333.funHash: 3efeb74673044e7da79ca37d6e2935fc9b89a55dDetections: alphaMointain.ai, ESET, Dr.Web and etc.Community Score: -1` | Additional context for suspicious indicators |
-| Shodan | `Open ports: 22, 80 Domain: vultrusercontent.com ASN: AS20473 Services on port 22: SSH SSH Software: OpenSSH8.9p1 Service on port 80: HTTP Web Service: nginx 1.31.3 HTTP Responce: 403 Forbidden` | Information about exposed services |
-| Maltego | Relationships between entities | Finding connections between indicators |
-
-## **Week 3 \- Data processing and exploitation**
-
-**MISP** 
-
-Open source platform—originally known as the Malware Information Sharing Platform—used to collect, store, correlate, and share cyber security indicators, threats, and vulnerabilities among organizations.
-
-**![Image 8](images/image8.png)**  
-**![Image 9](images/image9.png)**  
-Installing MISP on our computer inside Docker Compose to eliminate dependency hell.
-
-![Image 10](images/image10.png)  
-After our installation is successful, we need to go to the [http://localhost/](http://localhost/) on our web browser and we will be greeted by MISP.
-
-![Image 11](images/image11.png)
-
-#### **Step 2 — Creating an Event**
-
-We created a new MISP event called **“Low-Severity Threat IOC Analysis”**.
-
-The event was configured with the following parameters:
-
-* Threat Level: Medium  
-* Analysis: Initial  
-* Distribution: Your organisation only
-
-This event was used to store the indicators collected during our analysis.
-
-![Image 12](images/image12.png)
-
-![Image 13](images/image13.png)
-
-### **Step 3 — Adding and Organizing IOCs**
-
-The collected IOCs were added to the MISP event as attributes. We used several types of indicators:
-
-* IP address (`ip-dst`)  
-* Domain (`domain`)  
-* File hash (`sha256`)
-
-For example, the IP address `87.106.48.217`, which was investigated during OSINT analysis, was added as a Network Activity attribute.
-
-Each IOC was stored according to its type and category. This helped us organize the collected data in a structured format and prepare it for further filtering and normalization.
-
-![Image 14](images/image14.png)
-
-#### **Result**
-
-As a result, we successfully deployed MISP, created an event, and imported the collected IOCs. The indicators were organized by their type and category and prepared for further filtering and normalization.
-
-**Filtering and Normalization** 
-
-The data was converted into .csv file for further actions.
-
-### **Filtering and Normalization**
-
-Filtering and normalization were applied to improve the quality and consistency of the collected IOC data.
-
-| Technique | Raw Data Example | Process | Result |
-| ----- | ----- | ----- | ----- |
-| Duplicate Filtering | `87.106.48.217` appears twice | Remove duplicate values | `87.106.48.217` appears once |
-| Invalid IP Filtering | `999.999.999.999` | Check if the IP address is valid | Invalid IP is removed |
-| Empty Value Filtering | Empty domain value | Check for missing values | Empty row is removed |
-| Domain Normalization | `Example-Domain.COM` | Convert domain to lowercase | `example-domain.com` |
-| Hash Normalization | `ABCDEF123...` | Convert SHA-256 hash to lowercase | `abcdef123...` |
-| Whitespace Normalization | `87.106.48.217` | Remove extra spaces | `87.106.48.217` |
-
-After filtering and normalization, the dataset contains only valid and unique IOCs in a consistent format. The processed data can then be used for further threat intelligence analysis.
-
----
-
-## **Use of AI Tools**
-
-ChatGPT was used during the preparation of this project for:
-- Finding publicly available IP address information for OSINT analysis.
-- Polishing and improving the wording and readability of the report text.
-
-The analysis, investigation steps, and project results were reviewed and performed by the project team.
+[2] MITRE ATT&CK. APT29 (G0016). https://attack.mitre.org/groups/G0016/
